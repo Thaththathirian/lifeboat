@@ -1,0 +1,258 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Scholarship Connect Platform Design System 
+Educational excellence meets fintech precision
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base Colors - Clean whites and deep text */
+    --background: 0 0% 100%;
+    --foreground: 215 25% 15%;
+
+    /* Card System - Subtle elevation */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    /* Popover System */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Primary - Trust-building deep blue */
+    --primary: 220 90% 25%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 220 85% 35%;
+    --primary-glow: 220 100% 85%;
+
+    /* Secondary - Warm educational accent */
+    --secondary: 45 95% 88%;
+    --secondary-foreground: 220 90% 25%;
+    --secondary-warm: 35 100% 50%;
+
+    /* Muted - Sophisticated grays */
+    --muted: 215 15% 96%;
+    --muted-foreground: 215 15% 45%;
+    --muted-dark: 215 20% 85%;
+
+    /* Accent - Success and progress */
+    --accent: 142 70% 45%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 142 65% 55%;
+
+    /* Status Colors for Scholarship Tracking */
+    --status-pending: 45 95% 65%;
+    --status-approved: 142 70% 45%;
+    --status-rejected: 0 75% 60%;
+    --status-interview: 220 85% 55%;
+    --status-documents: 260 75% 65%;
+
+    /* System Colors */
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --warning: 45 95% 65%;
+    --warning-foreground: 45 90% 15%;
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Border and Input */
+    --border: 215 15% 90%;
+    --input: 215 15% 96%;
+    --ring: 220 90% 25%;
+
+    --radius: 0.75rem;
+
+    /* Educational Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-light)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-light)) 50%, hsl(var(--secondary-warm)) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+
+    /* Elegant Shadows */
+    --shadow-soft: 0 4px 12px -2px hsl(var(--primary) / 0.1);
+    --shadow-medium: 0 8px 25px -5px hsl(var(--primary) / 0.15);
+    --shadow-strong: 0 12px 40px -8px hsl(var(--primary) / 0.2);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.3);
+
+    /* Typography Scale */
+    --font-xs: 0.75rem;
+    --font-sm: 0.875rem;
+    --font-base: 1rem;
+    --font-lg: 1.125rem;
+    --font-xl: 1.25rem;
+    --font-2xl: 1.5rem;
+    --font-3xl: 1.875rem;
+    --font-4xl: 2.25rem;
+    --font-5xl: 3rem;
+    --font-6xl: 3.75rem;
+
+    /* Navigation Design Tokens */
+    --nav-item-padding-x: 1.5rem;
+    --nav-item-padding-y: 0.875rem;
+    --nav-item-gap: 0.75rem;
+    --nav-item-height: auto;
+
+    /* Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-gentle: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --animation-duration-fast: 0.15s;
+    --animation-duration-normal: 0.3s;
+    --animation-duration-slow: 0.5s;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+  }
+}
+
+@layer utilities {
+  /* Gradient Utilities */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+  
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+
+  /* Shadow Utilities */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Navigation Utilities */
+  .nav-item {
+    @apply w-full justify-start gap-3 h-auto transition-smooth;
+    padding-left: var(--nav-item-padding-x);
+    padding-right: var(--nav-item-padding-x);
+    padding-top: var(--nav-item-padding-y);
+    padding-bottom: var(--nav-item-padding-y);
+  }
+
+  .nav-item-child {
+    @apply w-full justify-start gap-3 h-auto transition-smooth;
+    padding-left: calc(var(--nav-item-padding-x) + 1rem);
+    padding-right: var(--nav-item-padding-x);
+    padding-top: var(--nav-item-padding-y);
+    padding-bottom: var(--nav-item-padding-y);
+  }
+
+  /* Transition Utilities */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+  
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+
+  /* Status Indicator Utilities */
+  .status-badge {
+    @apply px-3 py-1 rounded-full text-xs font-medium transition-smooth;
+  }
+  
+  .status-pending {
+    @apply bg-yellow-100 text-yellow-800 border border-yellow-200;
+  }
+  
+  .status-approved {
+    @apply bg-green-100 text-green-800 border border-green-200;
+  }
+  
+  .status-rejected {
+    @apply bg-red-100 text-red-800 border border-red-200;
+  }
+  
+  .status-interview {
+    @apply bg-blue-100 text-blue-800 border border-blue-200;
+  }
+  
+  .status-documents {
+    @apply bg-purple-100 text-purple-800 border border-purple-200;
+  }
+}
