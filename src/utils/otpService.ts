@@ -73,86 +73,29 @@ class OTPService {
   // Verify OTP
   async verifyOTP(mobileNumber: string, otp: string): Promise<OTPVerificationResponse> {
     try {
-      // Accept 111222 as a valid testing OTP for any mobile
-      if (otp === '111222') {
-        // Generate mock user data
-        const user = {
-          id: "LBFS001",
-          firstName: "Test",
-          lastName: "Student",
-          mobile: mobileNumber,
-          email: "student@example.com",
-        };
-        const token = `mock_token_${Date.now()}`;
-        return {
-          success: true,
-          message: "OTP verified successfully",
-          token,
-          user
-        };
-      }
-      // Validate inputs
-      if (!this.isValidMobileNumber(mobileNumber)) {
-        return {
-          success: false,
-          message: "Invalid mobile number"
-        };
+      // Call the backend API for OTP verification
+      const response = await fetch('http://localhost/lifeboat/Student/verify_mobile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mobileNumber: mobileNumber,
+          otp: otp
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      if (!this.isValidOTP(otp)) {
-        return {
-          success: false,
-          message: "Invalid OTP format"
-        };
-      }
-
-      // Get stored OTP
-      const storedData = this.otpStore.get(mobileNumber);
-      if (!storedData) {
-        return {
-          success: false,
-          message: "OTP not found. Please request a new OTP."
-        };
-      }
-
-      // Check if OTP is expired
-      if (new Date() > storedData.expiresAt) {
-        this.otpStore.delete(mobileNumber);
-        return {
-          success: false,
-          message: "OTP has expired. Please request a new OTP."
-        };
-      }
-
-      // Verify OTP
-      if (storedData.otp !== otp) {
-        return {
-          success: false,
-          message: "Invalid OTP. Please try again."
-        };
-      }
-
-      // Clear OTP after successful verification
-      this.otpStore.delete(mobileNumber);
-
-      // Generate mock user data
-      const user = {
-        id: "LBFS001",
-        firstName: "Test",
-        lastName: "Student",
-        mobile: mobileNumber,
-        email: "student@example.com",
-        // Add other user fields as needed
-      };
-
-      // Generate mock token (in production, this would be a JWT)
-      const token = `mock_token_${Date.now()}`;
-
+      const data = await response.json();
       return {
-        success: true,
-        message: "OTP verified successfully",
-        token,
-        user
+        success: data.success || false,
+        message: data.message || "OTP verification completed",
+        token: data.token,
+        user: data.user
       };
     } catch (error) {
       console.error("Error verifying OTP:", error);

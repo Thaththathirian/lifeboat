@@ -33,16 +33,16 @@ export default function StudentLandingPage() {
       console.log('Detected OAuth callback, processing...');
       handleOAuthCallback().then((oauthResult) => {
         if (oauthResult.success && 'user' in oauthResult && 'accessToken' in oauthResult) {
-          // Process the OAuth result similar to Google Sign-In
+        // Process the OAuth result similar to Google Sign-In
           const successResult = oauthResult as { success: true; user: any; accessToken: string };
           handleOAuthSuccess(successResult.user, successResult.accessToken);
-        } else {
-          toast({
-            title: "OAuth Failed",
-            description: oauthResult.error || "Failed to authenticate with Google",
-            variant: "destructive",
-          });
-        }
+      } else {
+        toast({
+          title: "OAuth Failed",
+          description: oauthResult.error || "Failed to authenticate with Google",
+          variant: "destructive",
+        });
+      }
       }).catch((error) => {
         console.error('OAuth callback error:', error);
         toast({

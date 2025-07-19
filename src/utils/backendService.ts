@@ -23,9 +23,9 @@ interface BackendAuthRequest {
 const getApiBaseUrl = () => {
   // Use environment variable for API base URL
   if (typeof import.meta !== 'undefined' && import.meta.env) {
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost/google-firebase-auth';
+    return import.meta.env.VITE_API_BASE_URL || 'http://localhost/lifeboat';
   }
-  return 'http://localhost/google-firebase-auth';
+  return 'http://localhost/lifeboat';
 };
 
 // Send Google OAuth token to backend for verification and user creation
@@ -43,7 +43,7 @@ export const authenticateWithBackend = async (
     const recaptchaToken = localStorage.getItem('recaptchaToken');
     
     // Use the correct API endpoint
-    const apiUrl = `${getApiBaseUrl()}/google_auth`;
+    const apiUrl = `${getApiBaseUrl()}/OAuth/Student`;
     console.log('API URL:', apiUrl);
     
     // Send JWT token in Authorization header for backend verification
