@@ -199,21 +199,23 @@ export default function StudentLandingPage() {
             localStorage.setItem('authToken', backendResponse.token);
           }
           
-          // Set user profile and show OTP verification
+          // Store Google user data in localStorage for mobile verification page
+          localStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+          
+          // Set user profile
           setProfile({
             ...googleUserData,
             ...backendResponse.user
           });
           setStatus('Profile Pending');
           
-          // Store Google user data and show OTP verification
-          setGoogleUserData(googleUserData);
-          setShowOTPVerification(true);
-          
           toast({
             title: "Google Sign-In Successful",
-            description: `Welcome, ${googleUserData.name}! Please verify your phone number.`,
+            description: `Welcome, ${googleUserData.name}! Redirecting to mobile verification...`,
           });
+          
+          // Redirect to mobile verification page
+          navigate('/mobile-verification');
         } else {
           toast({
             title: "Backend Verification Failed",
@@ -594,70 +596,7 @@ export default function StudentLandingPage() {
         <p>© 2024 Scholarship Connect. All rights reserved.</p>
       </footer>
 
-      {/* OTP Verification Modal */}
-      {showOTPVerification && googleUserData && (
-        <OTPVerification
-          googleUserData={googleUserData}
-          onSuccess={async (combinedUserData) => {
-            setShowOTPVerification(false);
-            setIsLoading(true);
-            
-            try {
-              // Send combined user data to backend
-              const backendResponse = await authenticateWithBackend(
-                combinedUserData.firebaseUid, // Use Firebase UID as token
-                combinedUserData
-              );
-              
-              if (backendResponse.success) {
-                // Store backend token in localStorage
-                if (backendResponse.token) {
-                  localStorage.setItem('authToken', backendResponse.token);
-                }
-                
-                // Set user profile and navigate to student dashboard
-                setProfile({
-                  ...combinedUserData,
-                  ...backendResponse.user
-                });
-                setStatus('Profile Pending');
-                
-                toast({
-                  title: "Authentication Successful",
-                  description: `Welcome, ${combinedUserData.name}! Redirecting to dashboard...`,
-                });
-                
-                // Navigate to student dashboard
-                navigate('/student');
-              } else {
-                toast({
-                  title: "Authentication Failed",
-                  description: backendResponse.error || "Failed to authenticate with backend",
-                  variant: "destructive",
-                });
-              }
-            } catch (error) {
-              console.error('Authentication failed:', error);
-              toast({
-                title: "Authentication Failed",
-                description: "Please try again or contact support.",
-                variant: "destructive",
-              });
-            } finally {
-              setIsLoading(false);
-            }
-          }}
-          onBack={() => {
-            setShowOTPVerification(false);
-            setGoogleUserData(null);
-            setIsLoading(false);
-            toast({
-              title: "Authentication Cancelled",
-              description: "You can try again later.",
-            });
-          }}
-        />
-      )}
+
     </div>
   );
 } 

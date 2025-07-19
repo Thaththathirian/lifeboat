@@ -13,6 +13,7 @@ import DonatePage from "@/pages/DonatePage"
 import NotFound from "@/pages/NotFound"
 import StudentLandingPage from "@/pages/StudentLandingPage"
 import GoogleLoginPage from "@/pages/student/GoogleLoginPage"
+import MobileVerification from "@/pages/student/MobileVerification"
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/AdminDashboard"
@@ -191,6 +192,7 @@ function App() {
           <Route path="/donate" element={<DonatePage />} />
           <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
           <Route path="/student/google-login" element={<GoogleLoginPage />} />
+          <Route path="/mobile-verification" element={<MobileVerification />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={
