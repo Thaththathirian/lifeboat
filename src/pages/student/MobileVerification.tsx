@@ -240,17 +240,25 @@ export default function MobileVerification() {
       const result = await verifyOTP(confirmationResult, otp);
       
       if (result.success && result.user) {
-        // Get Firebase ID token for authentication
+        // Get Firebase ID token for authentication (current bearer token)
         const idToken = await getFirebaseIdToken();
         
-        // Prepare headers with Firebase bearer token
+        // Get OAuth response data from localStorage (new bearer token)
+        const oauthToken = localStorage.getItem('authToken');
+        
+        if (!oauthToken) {
+          console.error('OAuth token not found in localStorage');
+          console.log('Available localStorage keys:', Object.keys(localStorage));
+          throw new Error('OAuth token not found. Please login again.');
+        }
+        
+        console.log('Using OAuth token for verify_mobile API:', oauthToken.substring(0, 50) + '...');
+        
+        // Prepare headers with OAuth bearer token
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${oauthToken}`,
         };
-        
-        if (idToken) {
-          headers['Authorization'] = `Bearer ${idToken}`;
-        }
         
         // Firebase verification successful, now call your API
         const apiResponse = await fetch('http://localhost/lifeboat/Student/verify_mobile', {
@@ -259,7 +267,8 @@ export default function MobileVerification() {
           body: JSON.stringify({
             mobileNumber: mobileNumber,
             firebaseUid: result.user.uid,
-            action: 'verify_mobile'
+            action: 'verify_mobile',
+            token: idToken // Move current bearer token to payload
           }),
         });
 

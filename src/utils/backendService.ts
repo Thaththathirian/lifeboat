@@ -71,6 +71,12 @@ export const authenticateWithBackend = async (
 
     const data = await response.json();
     console.log('Backend authentication successful:', data);
+    console.log('OAuth response data structure:', {
+      status: data.status,
+      message: data.message,
+      hasData: !!data.data,
+      dataLength: data.data ? data.data.length : 0
+    });
     
     // Clear reCAPTCHA token after successful authentication
     localStorage.removeItem('recaptchaToken');
@@ -78,7 +84,7 @@ export const authenticateWithBackend = async (
     return {
       success: true,
       user: data.user,
-      token: data.token
+      token: data.data // OAuth response token is in data.data
     };
   } catch (error) {
     console.error('Backend authentication failed:', error);
