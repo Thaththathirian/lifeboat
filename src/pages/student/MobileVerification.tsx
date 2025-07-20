@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Phone, ArrowLeft, CheckCircle, Clock, TestTube } from "lucide-react";
+import { Phone, ArrowLeft, CheckCircle, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
@@ -27,7 +27,7 @@ export default function MobileVerification() {
   const [otpSent, setOtpSent] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
-  const [testMode, setTestMode] = useState(false);
+
 
   // Get Google user data from URL params or localStorage
   const getGoogleUserData = (): GoogleUser | null => {
@@ -109,9 +109,17 @@ export default function MobileVerification() {
     setIsLoading(true);
     
     try {
-      if (testMode) {
-        // Test mode: Simulate OTP send
-        console.log('Test mode: Simulating OTP send to', mobileNumber);
+      // Firebase mode
+      console.log('Sending OTP via Firebase');
+      
+      // Format phone number for Firebase
+      const phoneNumber = `+91${mobileNumber}`;
+      
+      // Send OTP using Firebase with reCAPTCHA
+      const result = await sendOTP(phoneNumber, 'recaptcha-container');
+      
+      if (result.success) {
+        setConfirmationResult(result.confirmationResult);
         setOtpSent(true);
         startResendTimer();
         
@@ -123,38 +131,11 @@ export default function MobileVerification() {
         });
         
         toast({
-          title: "Test Mode: OTP Sent",
-          description: "Test OTP: 123456 (Test mode enabled)",
+          title: "OTP Sent Successfully",
+          description: "Please check your mobile for the verification code.",
         });
       } else {
-        // Original Firebase mode
-        console.log('Original mode: Sending OTP via Firebase');
-        
-        // Format phone number for Firebase
-        const phoneNumber = `+91${mobileNumber}`;
-        
-        // Send OTP using Firebase with reCAPTCHA
-        const result = await sendOTP(phoneNumber, 'recaptcha-container');
-        
-        if (result.success) {
-          setConfirmationResult(result.confirmationResult);
-          setOtpSent(true);
-          startResendTimer();
-          
-          // Store mobile number in profile
-          setProfile({
-            ...profile,
-            mobile: mobileNumber,
-            ...googleUserData
-          });
-          
-          toast({
-            title: "OTP Sent Successfully",
-            description: "Please check your mobile for the verification code.",
-          });
-        } else {
-          throw new Error(result.error || "Failed to send OTP");
-        }
+        throw new Error(result.error || "Failed to send OTP");
       }
     } catch (error) {
       console.error('Error sending OTP:', error);
@@ -186,39 +167,28 @@ export default function MobileVerification() {
     setIsLoading(true);
     
     try {
-      if (testMode) {
-        // Test mode: Simulate OTP resend
-        console.log('Test mode: Simulating OTP resend to', mobileNumber);
+      // Firebase mode
+      console.log('Resending OTP via Firebase');
+      
+      // Clear previous reCAPTCHA
+      clearRecaptcha();
+      
+      // Format phone number for Firebase
+      const phoneNumber = `+91${mobileNumber}`;
+      
+      // Resend OTP using Firebase
+      const result = await sendOTP(phoneNumber, 'recaptcha-container');
+      
+      if (result.success) {
+        setConfirmationResult(result.confirmationResult);
         startResendTimer();
         
         toast({
-          title: "Test Mode: OTP Resent",
-          description: "Test OTP: 123456 (Test mode enabled)",
+          title: "OTP Resent Successfully",
+          description: "Please check your mobile for the new verification code.",
         });
       } else {
-        // Original Firebase mode
-        console.log('Original mode: Resending OTP via Firebase');
-        
-        // Clear previous reCAPTCHA
-        clearRecaptcha();
-        
-        // Format phone number for Firebase
-        const phoneNumber = `+91${mobileNumber}`;
-        
-        // Resend OTP using Firebase
-        const result = await sendOTP(phoneNumber, 'recaptcha-container');
-        
-        if (result.success) {
-          setConfirmationResult(result.confirmationResult);
-          startResendTimer();
-          
-          toast({
-            title: "OTP Resent Successfully",
-            description: "Please check your mobile for the new verification code.",
-          });
-        } else {
-          throw new Error(result.error || "Failed to resend OTP");
-        }
+        throw new Error(result.error || "Failed to resend OTP");
       }
     } catch (error) {
       console.error('Error resending OTP:', error);
@@ -252,51 +222,6 @@ export default function MobileVerification() {
 
   // Handle OTP verification with Firebase
   const handleOTPVerification = async (otp: string) => {
-    if (testMode) {
-      // Test mode: Simulate OTP verification
-      if (otp === '123456') {
-        console.log('Test mode: OTP verification successful');
-        
-        // Simulate successful verification
-        const combinedUserData = {
-          ...googleUserData,
-          mobile: mobileNumber,
-          firebaseUid: 'test-uid-' + Date.now(),
-          verified: true,
-        };
-        
-        // Update profile with combined data
-        setProfile({
-          ...profile,
-          mobile: mobileNumber,
-          firebaseUid: 'test-uid-' + Date.now(),
-          ...googleUserData
-        });
-        setStatus('Profile Pending');
-        
-        // Set current user for protected routes
-        setCurrentUser(combinedUserData);
-        
-        toast({
-          title: "Test Mode: Verification Successful",
-          description: `Welcome, ${googleUserData.name}! Redirecting to dashboard...`,
-        });
-        
-        // Small delay to ensure state is updated before navigation
-        setTimeout(() => {
-          navigate('/student');
-        }, 100);
-      } else {
-        toast({
-          title: "Test Mode: Invalid OTP",
-          description: "Test OTP is 123456. Please try again.",
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-
-    // Original Firebase mode
     if (!confirmationResult) {
       toast({
         title: "Error",
@@ -392,20 +317,6 @@ export default function MobileVerification() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
-        {/* Test Mode Toggle */}
-        <div className="mb-4 flex justify-center">
-          <Button
-            type="button"
-            variant={testMode ? "default" : "outline"}
-            size="sm"
-            onClick={() => setTestMode(!testMode)}
-            className={`flex items-center gap-2 ${testMode ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
-          >
-            <TestTube className="h-4 w-4" />
-            {testMode ? "Test Mode ON" : "Test Mode OFF"}
-          </Button>
-        </div>
-
         <Card className="shadow-xl">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center mb-4">
@@ -420,20 +331,7 @@ export default function MobileVerification() {
                 : `Welcome, ${googleUserData.name}! Please verify your mobile number to continue.`
               }
             </p>
-            {testMode && (
-              <div className="mt-2 p-2 bg-orange-100 border border-orange-300 rounded-md">
-                <p className="text-sm text-orange-800 font-medium">
-                  🧪 Test Mode Active: Use "123456" as OTP
-                </p>
-              </div>
-            )}
-            {!testMode && (
-              <div className="mt-2 p-2 bg-blue-100 border border-blue-300 rounded-md">
-                <p className="text-sm text-blue-800 font-medium">
-                  🔥 Firebase Mode: Real OTP will be sent to your mobile
-                </p>
-              </div>
-            )}
+
           </CardHeader>
           
           <CardContent>
