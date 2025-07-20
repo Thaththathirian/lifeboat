@@ -8,7 +8,7 @@ import { Phone, ArrowLeft, CheckCircle, Clock, TestTube } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
-import { sendOTP, verifyOTP, clearRecaptcha } from "@/utils/firebase";
+import { sendOTP, verifyOTP, clearRecaptcha, getFirebaseIdToken } from "@/utils/firebase";
 
 interface GoogleUser {
   id: string;
@@ -315,12 +315,22 @@ export default function MobileVerification() {
       const result = await verifyOTP(confirmationResult, otp);
       
       if (result.success && result.user) {
+        // Get Firebase ID token for authentication
+        const idToken = await getFirebaseIdToken();
+        
+        // Prepare headers with Firebase bearer token
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (idToken) {
+          headers['Authorization'] = `Bearer ${idToken}`;
+        }
+        
         // Firebase verification successful, now call your API
         const apiResponse = await fetch('http://localhost/lifeboat/Student/verify_mobile', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify({
             mobileNumber: mobileNumber,
             firebaseUid: result.user.uid,

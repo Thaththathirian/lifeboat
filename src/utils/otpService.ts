@@ -1,4 +1,6 @@
 // OTP Service for handling OTP operations
+import { getFirebaseIdToken } from './firebase';
+
 export interface OTPResponse {
   success: boolean;
   message: string;
@@ -73,12 +75,22 @@ class OTPService {
   // Verify OTP
   async verifyOTP(mobileNumber: string, otp: string): Promise<OTPVerificationResponse> {
     try {
+      // Get Firebase ID token for authentication
+      const idToken = await getFirebaseIdToken();
+      
+      // Prepare headers with Firebase bearer token
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`;
+      }
+
       // Call the backend API for OTP verification
       const response = await fetch('http://localhost/lifeboat/Student/verify_mobile', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           mobileNumber: mobileNumber,
           otp: otp
