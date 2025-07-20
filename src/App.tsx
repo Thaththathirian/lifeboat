@@ -122,22 +122,71 @@ function App() {
     pageStateManager.saveState(location.pathname);
   }, [location.pathname]);
 
-  // Enhanced route restoration with scroll position
+  // Enhanced route restoration with scroll position and user state management
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
     const savedState = pageStateManager.getState();
     
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
-      
-      if (savedState && window.location.pathname === "/") {
-        navigate(savedState.route, { replace: true });
-        if (savedState.scrollPosition) {
-          pageStateManager.restoreScrollPosition(savedState.scrollPosition);
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setCurrentUser(parsedUser);
+        
+        if (savedState && window.location.pathname === "/") {
+          navigate(savedState.route, { replace: true });
+          if (savedState.scrollPosition) {
+            pageStateManager.restoreScrollPosition(savedState.scrollPosition);
+          }
         }
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('currentUser');
       }
     }
   }, []);
+
+  // Listen for localStorage changes to update currentUser state
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'currentUser') {
+        if (e.newValue) {
+          try {
+            const parsedUser = JSON.parse(e.newValue);
+            setCurrentUser(parsedUser);
+          } catch (error) {
+            console.error('Error parsing currentUser from storage event:', error);
+          }
+        } else {
+          setCurrentUser(null);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Also check localStorage periodically for changes (for same-tab updates)
+  useEffect(() => {
+    const checkUserState = () => {
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          if (!currentUser || currentUser.id !== parsedUser.id) {
+            setCurrentUser(parsedUser);
+          }
+        } catch (error) {
+          console.error('Error parsing currentUser:', error);
+        }
+      } else if (currentUser) {
+        setCurrentUser(null);
+      }
+    };
+
+    const interval = setInterval(checkUserState, 1000); // Check every second
+    return () => clearInterval(interval);
+  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) localStorage.setItem('currentUser', JSON.stringify(currentUser))
@@ -151,6 +200,7 @@ function App() {
   const handleLogout = () => {
     setCurrentUser(null)
     setCurrentPath("/")
+    localStorage.removeItem('currentUser');
   }
 
   const handleNavigate = (path: string) => {

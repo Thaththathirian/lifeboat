@@ -3,9 +3,13 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getTotalReceived, getLastReceived } from "./StudentPayments"
 import { useNavigate } from "react-router-dom";
 import { useStudent } from "@/contexts/StudentContext";
+import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
+import { useToast } from "@/hooks/use-toast";
 
 function ApplyForNextModal({ open, onClose }: { open: boolean, onClose: () => void }) {
   const [form, setForm] = useState({
@@ -67,6 +71,18 @@ export default function StudentDashboard() {
   const lastReceived = getLastReceived();
   const navigate = useNavigate();
 
+  // Get username from email/profile or first letter of name
+  const getUsername = () => {
+    if (profile?.email) {
+      return profile.email.split('@')[0]; // Use email username
+    } else if (profile?.firstName) {
+      return profile.firstName.charAt(0).toUpperCase(); // First letter of name
+    } else if (profile?.name) {
+      return profile.name.charAt(0).toUpperCase(); // First letter of name
+    }
+    return 'User'; // Fallback
+  };
+
   // Type guard function to check if status is a profile-related status
   const isProfileStatus = (status: string): boolean => {
     return status === 'Profile Pending' || status === 'Profile Under Verification';
@@ -113,34 +129,18 @@ export default function StudentDashboard() {
       );
     }
 
-    // Profile Pending status
+    // Profile Pending status - Show form directly
     if (status === 'Profile Pending') {
-      console.log('Status is Profile Pending, showing profile update card');
-      
-      // If profile is submitted but status hasn't been updated yet, show submitted form
-      if (profile?.submitted) {
-        return (
-          <Card className="mb-6 border-l-4 border-l-yellow-500">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl flex items-center justify-center gap-2">Your Profile Has Been Submitted</CardTitle>
-              <p className="text-muted-foreground mt-2">Your profile has been submitted and waiting to proceed next. You can view your submitted profile details below.</p>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              <Button onClick={() => navigate('/student/profile')} variant="outline">View Profile</Button>
-            </CardContent>
-          </Card>
-        );
-      }
-      
-      // If profile is not submitted yet, show update form
+      console.log('Status is Profile Pending, showing profile form directly');
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl flex items-center justify-center gap-2">Your Profile is Pending to Update</CardTitle>
-            <p className="text-muted-foreground mt-2">Click below button to update your profile and continue your scholarship application.</p>
+            <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
+            <p className="text-muted-foreground mt-2">Please fill out your profile details below to continue your scholarship application.</p>
           </CardHeader>
-          <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/student/profile')}>Update Profile</Button>
+          <CardContent>
+            {/* Profile Form Component will be rendered here */}
+            <ProfileForm />
           </CardContent>
         </Card>
       );
