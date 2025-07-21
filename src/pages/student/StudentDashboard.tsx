@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { useToast } from "@/hooks/use-toast";
+import ProfileForm from "@/components/ProfileForm";
 
 function ApplyForNextModal({ open, onClose }: { open: boolean, onClose: () => void }) {
   const [form, setForm] = useState({
@@ -114,32 +115,20 @@ export default function StudentDashboard() {
   const getStatusCard = () => {
     console.log('Current status:', status);
     
-    // First login - no profile data
-    if (!profile || !profile.firstName) {
+    // Always show form on home page if profile is not submitted or under verification
+    if (!profile?.submitted || status === 'Profile Pending' || status === 'Profile Under Verification') {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
-            <p className="text-muted-foreground mt-2">Please complete your profile to continue your scholarship application.</p>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/student/profile')}>Complete Profile</Button>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    // Profile Pending status - Show form directly
-    if (status === 'Profile Pending') {
-      console.log('Status is Profile Pending, showing profile form directly');
-      return (
-        <Card className="mb-6 border-l-4 border-l-blue-500">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
-            <p className="text-muted-foreground mt-2">Please fill out your profile details below to continue your scholarship application.</p>
+            <p className="text-muted-foreground mt-2">
+              {!profile?.submitted 
+                ? "Please fill out your profile details below to continue your scholarship application."
+                : "Your profile has been submitted and is pending verification. You can view your submitted details below."
+              }
+            </p>
           </CardHeader>
           <CardContent>
-            {/* Profile Form Component will be rendered here */}
             <ProfileForm />
           </CardContent>
         </Card>
@@ -322,18 +311,13 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full min-h-[calc(100vh-4rem)] py-8 px-2">
+    <div className="flex flex-col items-center w-full min-h-[calc(100vh-4rem)] py-4 sm:py-6 md:py-8 px-2 sm:px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl"
+        className="w-full max-w-5xl"
       >
-        {/* Status Card - Always First and Most Prominent */}
-        <div className="mb-8">
-          {getStatusCard()}
-        </div>
-
-        {/* Application Status Card - Always right after the status card */}
+        {/* Application Status Card - Always First */}
         <div className="mb-6">
           <Card>
             <CardContent className="p-6">
@@ -348,6 +332,11 @@ export default function StudentDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Status Card - Second */}
+        <div className="mb-8">
+          {getStatusCard()}
         </div>
 
         {/* Profile Summary Card - Show when profile is submitted but not yet verified */}

@@ -21,7 +21,7 @@ interface BackendAuthRequest {
 
 // Get the correct API base URL for development and production
 const getApiBaseUrl = () => {
-  // Use environment variable for API base URL
+  // Always use the direct backend URL, not through Vite proxy
   if (typeof import.meta !== 'undefined' && import.meta.env) {
     return import.meta.env.VITE_API_BASE_URL || 'http://localhost/lifeboat';
   }
@@ -213,3 +213,89 @@ Response:
   "message": "Logged out successfully"
 }
 */ 
+
+// Profile draft management functions
+interface ProfileDraft {
+  formData: any;
+  currentStep: number;
+  lastSaved: string;
+}
+
+// Save profile draft to backend
+export const saveProfileDraft = async (draftData: ProfileDraft | null): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/profile/draft`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        draftData: draftData, // null to clear draft, or draft object to save
+      }),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.success || false;
+  } catch (error) {
+    console.error('Failed to save profile draft:', error);
+    throw error;
+  }
+};
+
+// Get profile draft from backend
+export const getProfileDraft = async (): Promise<ProfileDraft | null> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      return null;
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/profile/draft`;
+    console.log('Fetching draft from:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No draft found
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.draftData || null;
+  } catch (error) {
+    console.error('Failed to get profile draft:', error);
+    // Return null instead of throwing to allow form to work offline
+    return null;
+  }
+};

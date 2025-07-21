@@ -278,8 +278,9 @@ export default function MobileVerification() {
         }
 
         const apiData = await apiResponse.json();
+        console.log('API Response:', apiData);
         
-        if (apiData.success) {
+        if (apiData.status === true) {
           // Update profile with combined data
           setProfile({
             ...profile,

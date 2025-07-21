@@ -105,11 +105,7 @@ export default function LandingPage() {
               variant="outline"
               className={`w-full font-semibold flex items-center justify-center gap-2 py-2 ${role.buttonColor} ${role.buttonText}`}
               onClick={() => {
-                if (role.loginType === 'student') {
-                  navigate('/');
-                } else {
-                  navigate(`/login?type=${role.loginType}`);
-                }
+                navigate('/');
               }}
             >
               <span className="mr-2">→</span> {role.button}

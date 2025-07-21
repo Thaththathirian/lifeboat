@@ -110,7 +110,7 @@ export function DashboardLayout({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeInOut" }}
-              className="w-full max-w-[98vw] md:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] 2xl:max-w-[80vw] p-4 md:p-6 lg:p-8 mx-auto flex-1"
+              className="w-full max-w-[100vw] sm:max-w-[98vw] md:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] 2xl:max-w-[80vw] p-2 sm:p-4 md:p-6 lg:p-8 mx-auto flex-1"
             >
               {userType === 'student' && status ? (
                 <div className="mb-3 flex flex-wrap items-center gap-3 bg-blue-50 border border-blue-200 rounded px-3 py-2 text-sm relative">

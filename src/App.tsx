@@ -8,7 +8,6 @@ import { StudentStatusProvider } from '@/components/layout/StudentStatusProvider
 
 // Pages
 import LandingPage from "@/pages/LandingPage"
-import LoginPage from "@/pages/LoginPage"
 import DonatePage from "@/pages/DonatePage"
 import NotFound from "@/pages/NotFound"
 import StudentLandingPage from "@/pages/StudentLandingPage"
@@ -216,7 +215,7 @@ function App() {
     allowedUserType: string 
   }) => {
     if (!currentUser || currentUser.type !== allowedUserType) {
-      return <Navigate to="/login" replace />
+      return <Navigate to="/" replace />
     }
     return <>{children}</>
   }
@@ -240,7 +239,6 @@ function App() {
           <Route path="/" element={<StudentLandingPage />} />
           <Route path="/home" element={<LandingPage />} />
           <Route path="/donate" element={<DonatePage />} />
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
           <Route path="/student/google-login" element={<GoogleLoginPage />} />
           <Route path="/mobile-verification" element={<MobileVerification />} />
           
