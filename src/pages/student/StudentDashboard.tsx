@@ -136,13 +136,13 @@ export default function StudentDashboard() {
     }
 
     // Profile Under Verification status
-    if (status === 'Profile Under Verification') {
+    if (status === ('Profile Under Verification' as any)) {
       console.log('Status is Profile Under Verification, showing verification pending card');
       return (
         <Card className="mb-6 border-l-4 border-l-yellow-500">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl flex items-center justify-center gap-2">Your Profile Has Been Submitted</CardTitle>
-            <p className="text-muted-foreground mt-2">Your profile has been submitted and waiting to proceed next. You can view your submitted profile details below.</p>
+            <CardTitle className="text-2xl flex items-center justify-center gap-2">Profile Verification Pending</CardTitle>
+            <p className="text-muted-foreground mt-2">Your profile has been submitted and is under verification by admin. You can view your submitted profile details below.</p>
           </CardHeader>
           <CardContent className="flex justify-center">
             <Button onClick={() => navigate('/student/profile')} variant="outline">View Profile</Button>
@@ -159,11 +159,48 @@ export default function StudentDashboard() {
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Interview Scheduled</CardTitle>
-            <p className="text-muted-foreground mt-2">Your interview has been scheduled on <span className="font-semibold text-blue-600">15th January 2024 at 10:00 AM</span>. Please be prepared with all your documents.</p>
+            <p className="text-muted-foreground mt-2">Your interview has been scheduled on <span className="font-semibold text-blue-600">15th January 2024 at 10:00 AM</span> at <span className="font-semibold text-blue-600">Main Campus, Room 205</span>.</p>
           </CardHeader>
-          <CardContent className="flex justify-center gap-4">
-            <Button onClick={() => navigate('/student/profile')} variant="outline">View Profile</Button>
-            <Button onClick={() => navigate('/student/interview')}>Interview Details</Button>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-2">Interview Details:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                  <div><span className="font-medium">Date:</span> 15th January 2024</div>
+                  <div><span className="font-medium">Time:</span> 10:00 AM</div>
+                  <div><span className="font-medium">Location:</span> Main Campus, Room 205</div>
+                  <div><span className="font-medium">Interviewer:</span> Dr. Sarah Johnson</div>
+                  <div><span className="font-medium">Duration:</span> 30 minutes</div>
+                </div>
+              </div>
+              
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-yellow-800 mb-2">Required Documents:</h4>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  <li>• Original ID proof (Aadhar Card/Passport)</li>
+                  <li>• All academic certificates and mark sheets</li>
+                  <li>• Income certificate of parents</li>
+                  <li>• Caste certificate (if applicable)</li>
+                  <li>• Domicile certificate</li>
+                  <li>• Passport size photographs (2 copies)</li>
+                </ul>
+              </div>
+              
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-green-800 mb-2">Important Instructions:</h4>
+                <ul className="text-sm text-green-700 space-y-1">
+                  <li>• Please arrive 15 minutes before the scheduled time</li>
+                  <li>• Dress formally and professionally</li>
+                  <li>• Bring all required documents in original</li>
+                  <li>• Be prepared to discuss your academic background and financial need</li>
+                  <li>• Mobile phones should be switched off during the interview</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="flex justify-center mt-4">
+              <Button onClick={() => navigate('/student/profile')} variant="outline">View Profile</Button>
+            </div>
           </CardContent>
         </Card>
       );
@@ -339,13 +376,20 @@ export default function StudentDashboard() {
           {getStatusCard()}
         </div>
 
-        {/* Profile Summary Card - Show when profile is submitted but not yet verified */}
-        {(status === 'Profile Under Verification' || (status === 'Profile Pending' && profile?.submitted)) && (
+        {/* Profile Summary Card - Show when profile is submitted and verified */}
+        {(status === 'Profile Under Verification' || status === 'Schedule Interview' || status === 'documents' || status === 'documents_submitted' || status === 'eligible_scholarship' || status === 'payment' || status === 'paid' || status === 'academic_documents_pending' || status === 'academic_documents_submitted' || status === 'academic_results_pending' || status === 'academic_verification_pending' || status === 'apply_next' || status === 'alumni' || status === 'Future Ready Module') && profile?.submitted && (
           <div className="mb-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Submitted Profile Summary</CardTitle>
-                <p className="text-muted-foreground">Your submitted profile details (read-only)</p>
+                <CardTitle className="text-xl">
+                  {status === 'Profile Under Verification' ? 'Submitted Profile Summary (Pending Verification)' : 'Profile Summary'}
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  {status === 'Profile Under Verification' 
+                    ? 'Your submitted profile details (read-only) - Awaiting admin verification'
+                    : 'Your verified profile details (read-only)'
+                  }
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">

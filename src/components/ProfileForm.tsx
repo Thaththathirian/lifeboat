@@ -467,13 +467,15 @@ export default function ProfileForm() {
     
     setIsSaving(true);
     try {
-      // Update profile
-      setProfile({
+      // Update profile with submitted data
+      const submittedProfile = {
         ...profile,
         ...formData,
         submitted: true,
         submittedAt: new Date().toISOString()
-      });
+      };
+      
+      setProfile(submittedProfile);
       
       // Update status to Profile Under Verification
       setStatus('Profile Under Verification');

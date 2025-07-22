@@ -171,8 +171,19 @@ export function Navigation({ userType, className, closeSidebar }: NavigationProp
         ]
 
       case 'student':
-        // No navigation items for students - they only have profile dropdown
-        return [];
+        // Show Profile navigation if student has submitted profile
+        const studentNavItems: NavItem[] = [];
+        
+        // Add Profile navigation if status is not 'Profile Pending' or if profile is submitted
+        if (status && status !== 'Profile Pending') {
+          studentNavItems.push({
+            title: "Profile",
+            path: "/student/profile",
+            icon: <UserCheck className="h-4 w-4" />
+          });
+        }
+        
+        return studentNavItems;
 
       case 'donor':
         return [
