@@ -8,7 +8,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { saveProfileDraft, getProfileDraft } from "@/utils/backendService";
+import { 
+  saveProfileDraft, 
+  getProfileDraft,
+  getPersonalDetails,
+  savePersonalDetails,
+  getFamilyDetails,
+  saveFamilyDetails,
+  getAcademicDetails,
+  saveAcademicDetails
+} from "@/utils/backendService";
 
 export default function ProfileForm() {
   const { profile, setProfile } = useStudent();
@@ -74,31 +83,71 @@ export default function ProfileForm() {
 
   const [otherCollege, setOtherCollege] = useState("");
 
-  // Load draft data when component mounts
+  // Helper function to get input styling based on errors
+  const getInputStyling = (fieldName: string) => {
+    const hasError = errors[fieldName];
+    return {
+      className: `${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'} transition-colors duration-200`,
+      errorMessage: hasError ? `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required` : ''
+    };
+  };
+
+  // Load profile data when component mounts
   useEffect(() => {
-    const loadDraftData = async () => {
+    const loadProfileData = async () => {
       try {
-        // Only try to load draft data if user is authenticated
+        // Only try to load data if user is authenticated
         if (!isAuthenticated()) {
-          console.log('User not authenticated, skipping draft load');
+          console.log('User not authenticated, skipping data load');
+          setIsLoading(false);
           return;
         }
         
-        const draftData = await getProfileDraft();
-        if (draftData) {
-          setFormData(draftData.formData);
-          setCurrentStep(draftData.currentStep);
+        // Load data from all three sections
+        const [personalDetails, familyDetails, academicDetails, draftData] = await Promise.allSettled([
+          getPersonalDetails(),
+          getFamilyDetails(),
+          getAcademicDetails(),
+          getProfileDraft()
+        ]);
+
+        // Update form data with fetched data
+        const updatedFormData = { ...formData };
+
+        // Personal Details
+        if (personalDetails.status === 'fulfilled' && personalDetails.value) {
+          Object.assign(updatedFormData, personalDetails.value);
         }
+
+        // Family Details
+        if (familyDetails.status === 'fulfilled' && familyDetails.value) {
+          Object.assign(updatedFormData, familyDetails.value);
+        }
+
+        // Academic Details
+        if (academicDetails.status === 'fulfilled' && academicDetails.value) {
+          Object.assign(updatedFormData, academicDetails.value);
+        }
+
+        // Draft data (if no server data exists)
+        if (draftData.status === 'fulfilled' && draftData.value && 
+            !personalDetails.value && !familyDetails.value && !academicDetails.value) {
+          setFormData(draftData.value.formData);
+          setCurrentStep(draftData.value.currentStep);
+        } else {
+          setFormData(updatedFormData);
+        }
+
       } catch (error) {
-        console.error('Error loading draft data:', error);
-        // Don't show error toast for draft loading to avoid spam
+        console.error('Error loading profile data:', error);
+        // Don't show error toast for data loading to avoid spam
         // Just log the error and continue with empty form
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadDraftData();
+    loadProfileData();
   }, []);
 
   // Validation patterns
@@ -320,6 +369,67 @@ export default function ProfileForm() {
         return;
       }
       
+      // Save to appropriate API endpoint based on current step
+      if (currentStep === 1) {
+        // Save personal details
+        const personalDetails = {
+          firstName: updatedFormData.firstName,
+          lastName: updatedFormData.lastName,
+          gender: updatedFormData.gender,
+          dob: updatedFormData.dob,
+          street: updatedFormData.street,
+          city: updatedFormData.city,
+          state: updatedFormData.state,
+          pinCode: updatedFormData.pinCode,
+          mobile: updatedFormData.mobile,
+          email: updatedFormData.email,
+        };
+        await savePersonalDetails(personalDetails);
+      } else if (currentStep === 2) {
+        // Save family details
+        const familyDetails = {
+          fatherName: updatedFormData.fatherName,
+          fatherOccupation: updatedFormData.fatherOccupation,
+          motherName: updatedFormData.motherName,
+          motherOccupation: updatedFormData.motherOccupation,
+          parentsPhone: updatedFormData.parentsPhone,
+          familyDetails: updatedFormData.familyDetails,
+          familyAnnualIncome: updatedFormData.familyAnnualIncome,
+        };
+        await saveFamilyDetails(familyDetails);
+      } else if (currentStep === 3) {
+        // Save academic details
+        const academicDetails = {
+          grade: updatedFormData.grade,
+          presentSemester: updatedFormData.presentSemester,
+          academicYear: updatedFormData.academicYear,
+          collegeName: updatedFormData.collegeName,
+          collegePhone: updatedFormData.collegePhone,
+          collegeEmail: updatedFormData.collegeEmail,
+          collegeWebsite: updatedFormData.collegeWebsite,
+          referencePersonName: updatedFormData.referencePersonName,
+          referencePersonQualification: updatedFormData.referencePersonQualification,
+          referencePersonPosition: updatedFormData.referencePersonPosition,
+          totalCollegeFees: updatedFormData.totalCollegeFees,
+          scholarshipAmountRequired: updatedFormData.scholarshipAmountRequired,
+          marks10th: updatedFormData.marks10th,
+          marks12th: updatedFormData.marks12th,
+          marksSem1: updatedFormData.marksSem1,
+          marksSem2: updatedFormData.marksSem2,
+          marksSem3: updatedFormData.marksSem3,
+          marksSem4: updatedFormData.marksSem4,
+          marksSem5: updatedFormData.marksSem5,
+          marksSem6: updatedFormData.marksSem6,
+          marksSem7: updatedFormData.marksSem7,
+          marksSem8: updatedFormData.marksSem8,
+          declaration: updatedFormData.declaration,
+          arrears: updatedFormData.arrears,
+          awareness: updatedFormData.awareness,
+        };
+        await saveAcademicDetails(academicDetails);
+      }
+      
+      // Also save to draft as backup
       await saveProfileDraft({
         formData: updatedFormData,
         currentStep,
@@ -415,6 +525,51 @@ export default function ProfileForm() {
 
   const handleNext = async () => {
     if (currentStep < 3) {
+      // Trigger validation for all fields in current step
+      const currentStepFields = {
+        1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email'],
+        2: ['fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome'],
+        3: ['grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness']
+      };
+      
+      const fieldsToValidate = currentStepFields[currentStep as keyof typeof currentStepFields] || [];
+      
+      // Validate each field and set errors
+      fieldsToValidate.forEach(field => {
+        const value = formData[field as keyof typeof formData];
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          setErrors(prev => ({
+            ...prev,
+            [field]: `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
+          }));
+        }
+      });
+      
+      // Validate current step before proceeding
+      let isValid = false;
+      let errorMessage = "";
+      
+      if (currentStep === 1) {
+        isValid = isPersonalDetailsValid();
+        if (!isValid) {
+          errorMessage = "Please fill all required personal details correctly.";
+        }
+      } else if (currentStep === 2) {
+        isValid = isFamilyDetailsValid();
+        if (!isValid) {
+          errorMessage = "Please fill all required family details correctly.";
+        }
+      }
+      
+      if (!isValid) {
+        toast({
+          title: "Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setIsSaving(true);
       try {
         // Check if user is authenticated before attempting to save
@@ -427,24 +582,53 @@ export default function ProfileForm() {
           return;
         }
         
-        // Save current step data to backend
-        await saveProfileDraft({
-          formData,
-          currentStep: currentStep + 1,
-          lastSaved: new Date().toISOString()
-        });
+        // Save current step data to appropriate API endpoint
+        let saveSuccess = false;
         
-        // Show success message
-        toast({
-          title: "Progress Saved!",
-          description: "Your progress has been saved. You can continue later.",
-          variant: "default",
-        });
+        if (currentStep === 1) {
+          // Save personal details
+          const personalDetails = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            gender: formData.gender,
+            dob: formData.dob,
+            street: formData.street,
+            city: formData.city,
+            state: formData.state,
+            pinCode: formData.pinCode,
+            mobile: formData.mobile,
+            email: formData.email,
+          };
+          saveSuccess = await savePersonalDetails(personalDetails);
+        } else if (currentStep === 2) {
+          // Save family details
+          const familyDetails = {
+            fatherName: formData.fatherName,
+            fatherOccupation: formData.fatherOccupation,
+            motherName: formData.motherName,
+            motherOccupation: formData.motherOccupation,
+            parentsPhone: formData.parentsPhone,
+            familyDetails: formData.familyDetails,
+            familyAnnualIncome: formData.familyAnnualIncome,
+          };
+          saveSuccess = await saveFamilyDetails(familyDetails);
+        }
         
-        // Move to next step
-        setCurrentStep(currentStep + 1);
+        if (saveSuccess) {
+          // Show success message
+          toast({
+            title: "Progress Saved!",
+            description: "Your progress has been saved. You can continue later.",
+            variant: "default",
+          });
+          
+          // Move to next step
+          setCurrentStep(currentStep + 1);
+        } else {
+          throw new Error('Failed to save data');
+        }
       } catch (error) {
-        console.error('Error saving draft:', error);
+        console.error('Error saving data:', error);
         toast({
           title: "Save Failed",
           description: "Failed to save your progress. Please try again.",
@@ -465,8 +649,90 @@ export default function ProfileForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Trigger validation for all required fields
+    const allRequiredFields = [
+      'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email',
+      'fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome',
+      'grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness'
+    ];
+    
+    // Validate each field and set errors
+    allRequiredFields.forEach(field => {
+      const value = formData[field as keyof typeof formData];
+      if (!value || (typeof value === 'string' && value.trim() === '') || (typeof value === 'boolean' && !value)) {
+        setErrors(prev => ({
+          ...prev,
+          [field]: `${field.charAt(0).toUpperCase() + field.slice(1)} is required`
+        }));
+      }
+    });
+    
+    // Validate all sections before submitting
+    if (!isAllRequiredFieldsFilled()) {
+      toast({
+        title: "Validation Error",
+        description: "Please complete all required fields in all sections before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (hasAnyErrors()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix all validation errors before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSaving(true);
     try {
+      // Check if user is authenticated
+      if (!isAuthenticated()) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to submit your profile.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Save academic details first
+      const academicDetails = {
+        grade: formData.grade,
+        presentSemester: formData.presentSemester,
+        academicYear: formData.academicYear,
+        collegeName: formData.collegeName,
+        collegePhone: formData.collegePhone,
+        collegeEmail: formData.collegeEmail,
+        collegeWebsite: formData.collegeWebsite,
+        referencePersonName: formData.referencePersonName,
+        referencePersonQualification: formData.referencePersonQualification,
+        referencePersonPosition: formData.referencePersonPosition,
+        totalCollegeFees: formData.totalCollegeFees,
+        scholarshipAmountRequired: formData.scholarshipAmountRequired,
+        marks10th: formData.marks10th,
+        marks12th: formData.marks12th,
+        marksSem1: formData.marksSem1,
+        marksSem2: formData.marksSem2,
+        marksSem3: formData.marksSem3,
+        marksSem4: formData.marksSem4,
+        marksSem5: formData.marksSem5,
+        marksSem6: formData.marksSem6,
+        marksSem7: formData.marksSem7,
+        marksSem8: formData.marksSem8,
+        declaration: formData.declaration,
+        arrears: formData.arrears,
+        awareness: formData.awareness,
+      };
+
+      const academicSaveSuccess = await saveAcademicDetails(academicDetails);
+
+      if (!academicSaveSuccess) {
+        throw new Error('Failed to save academic details');
+      }
+
       // Update profile with submitted data
       const submittedProfile = {
         ...profile,
@@ -663,10 +929,10 @@ export default function ProfileForm() {
               value={formData.firstName}
               onChange={(e) => handleInputChange('firstName', e.target.value)}
               disabled={isReadOnly}
-              className={errors.firstName ? 'border-red-500' : ''}
+              className={`${errors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'} transition-colors duration-200`}
             />
             {errors.firstName && (
-              <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.firstName}</p>
             )}
           </div>
                       <div>
@@ -678,10 +944,10 @@ export default function ProfileForm() {
               value={formData.lastName}
               onChange={(e) => handleInputChange('lastName', e.target.value)}
               disabled={isReadOnly}
-              className={errors.lastName ? 'border-red-500' : ''}
+              className={getInputStyling('lastName').className}
             />
             {errors.lastName && (
-              <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.lastName}</p>
             )}
           </div>
         </div>
@@ -692,7 +958,7 @@ export default function ProfileForm() {
                 Gender <span className="text-red-500">*</span>
               </label>
             <Select value={formData.gender} onValueChange={(value) => handleInputChange('gender', value)} disabled={isReadOnly}>
-              <SelectTrigger>
+              <SelectTrigger className={getInputStyling('gender').className}>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
               <SelectContent>
@@ -701,6 +967,9 @@ export default function ProfileForm() {
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+            {errors.gender && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.gender}</p>
+            )}
           </div>
                       <div>
               <label className="block text-sm font-medium mb-2">
@@ -716,8 +985,11 @@ export default function ProfileForm() {
                 input.showPicker?.();
               }}
               disabled={isReadOnly}
-              className="cursor-pointer"
+              className={`cursor-pointer ${getInputStyling('dob').className}`}
             />
+            {errors.dob && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.dob}</p>
+            )}
           </div>
         </div>
 
@@ -730,7 +1002,11 @@ export default function ProfileForm() {
             value={formData.street}
             onChange={(e) => handleInputChange('street', e.target.value)}
             disabled={isReadOnly}
+            className={getInputStyling('street').className}
           />
+          {errors.street && (
+            <p className="text-red-500 text-xs mt-1 font-medium">{errors.street}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -743,7 +1019,11 @@ export default function ProfileForm() {
               value={formData.city}
               onChange={(e) => handleInputChange('city', e.target.value)}
               disabled={isReadOnly}
+              className={getInputStyling('city').className}
             />
+            {errors.city && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.city}</p>
+            )}
           </div>
                       <div>
               <label className="block text-sm font-medium mb-2">
@@ -754,7 +1034,11 @@ export default function ProfileForm() {
               value={formData.state}
               onChange={(e) => handleInputChange('state', e.target.value)}
               disabled={isReadOnly}
+              className={getInputStyling('state').className}
             />
+            {errors.state && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.state}</p>
+            )}
           </div>
                       <div className="sm:col-span-2 lg:col-span-1">
               <label className="block text-sm font-medium mb-2">
@@ -766,10 +1050,10 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('pinCode', e.target.value)}
               onKeyPress={handlePinCodeKeyPress}
               disabled={isReadOnly}
-              className={errors.pinCode ? 'border-red-500' : ''}
+              className={getInputStyling('pinCode').className}
             />
             {errors.pinCode && (
-              <p className="text-red-500 text-xs mt-1">{errors.pinCode}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.pinCode}</p>
             )}
           </div>
         </div>
@@ -785,10 +1069,10 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('mobile', e.target.value)}
               onKeyPress={handleMobileKeyPress}
               disabled={isReadOnly}
-              className={errors.mobile ? 'border-red-500' : ''}
+              className={getInputStyling('mobile').className}
             />
             {errors.mobile && (
-              <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.mobile}</p>
             )}
           </div>
                       <div>
@@ -801,10 +1085,10 @@ export default function ProfileForm() {
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               disabled={isReadOnly}
-              className={errors.email ? 'border-red-500' : ''}
+              className={getInputStyling('email').className}
             />
             {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.email}</p>
             )}
           </div>
         </div>
@@ -831,10 +1115,10 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('fatherName', e.target.value)}
               onKeyPress={handleNameKeyPress}
               disabled={isReadOnly}
-              className={errors.fatherName ? 'border-red-500' : ''}
+              className={getInputStyling('fatherName').className}
             />
             {errors.fatherName && (
-              <p className="text-red-500 text-xs mt-1">{errors.fatherName}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.fatherName}</p>
             )}
           </div>
                       <div>
@@ -846,7 +1130,11 @@ export default function ProfileForm() {
               value={formData.fatherOccupation}
               onChange={(e) => handleInputChange('fatherOccupation', e.target.value)}
               disabled={isReadOnly}
+              className={getInputStyling('fatherOccupation').className}
             />
+            {errors.fatherOccupation && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.fatherOccupation}</p>
+            )}
           </div>
         </div>
 
@@ -860,7 +1148,11 @@ export default function ProfileForm() {
               value={formData.motherName}
               onChange={(e) => handleInputChange('motherName', e.target.value)}
               disabled={isReadOnly}
+              className={getInputStyling('motherName').className}
             />
+            {errors.motherName && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.motherName}</p>
+            )}
           </div>
                       <div>
               <label className="block text-sm font-medium mb-2">
@@ -871,7 +1163,11 @@ export default function ProfileForm() {
               value={formData.motherOccupation}
               onChange={(e) => handleInputChange('motherOccupation', e.target.value)}
               disabled={isReadOnly}
+              className={getInputStyling('motherOccupation').className}
             />
+            {errors.motherOccupation && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.motherOccupation}</p>
+            )}
           </div>
         </div>
 
@@ -886,10 +1182,10 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('parentsPhone', e.target.value)}
               onKeyPress={handleMobileKeyPress}
               disabled={isReadOnly}
-              className={errors.parentsPhone ? 'border-red-500' : ''}
+              className={getInputStyling('parentsPhone').className}
             />
             {errors.parentsPhone && (
-              <p className="text-red-500 text-xs mt-1">{errors.parentsPhone}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.parentsPhone}</p>
             )}
           </div>
                       <div>
@@ -902,10 +1198,10 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('familyAnnualIncome', e.target.value)}
               onKeyPress={handleNumberKeyPress}
               disabled={isReadOnly}
-              className={errors.familyAnnualIncome ? 'border-red-500' : ''}
+              className={getInputStyling('familyAnnualIncome').className}
             />
             {errors.familyAnnualIncome && (
-              <p className="text-red-500 text-xs mt-1">{errors.familyAnnualIncome}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.familyAnnualIncome}</p>
             )}
           </div>
         </div>
@@ -943,7 +1239,11 @@ export default function ProfileForm() {
               value={formData.grade}
               onChange={(e) => handleInputChange('grade', e.target.value)}
               disabled={isReadOnly}
+              className={getInputStyling('grade').className}
             />
+            {errors.grade && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.grade}</p>
+            )}
           </div>
                       <div>
               <label className="block text-sm font-medium mb-2">
@@ -967,7 +1267,11 @@ export default function ProfileForm() {
               value={formData.academicYear}
               onChange={(e) => handleInputChange('academicYear', e.target.value)}
               disabled={isReadOnly}
+              className={getInputStyling('academicYear').className}
             />
+            {errors.academicYear && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.academicYear}</p>
+            )}
           </div>
 
                   <div>
@@ -979,7 +1283,11 @@ export default function ProfileForm() {
             value={formData.collegeName}
             onChange={(e) => handleInputChange('collegeName', e.target.value)}
             disabled={isReadOnly}
+            className={getInputStyling('collegeName').className}
           />
+          {errors.collegeName && (
+            <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeName}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -1068,10 +1376,10 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('totalCollegeFees', e.target.value)}
               onKeyPress={handleNumberKeyPress}
               disabled={isReadOnly}
-              className={errors.totalCollegeFees ? 'border-red-500' : ''}
+              className={getInputStyling('totalCollegeFees').className}
             />
             {errors.totalCollegeFees && (
-              <p className="text-red-500 text-xs mt-1">{errors.totalCollegeFees}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.totalCollegeFees}</p>
             )}
           </div>
                       <div>
@@ -1084,10 +1392,10 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('scholarshipAmountRequired', e.target.value)}
               onKeyPress={handleNumberKeyPress}
               disabled={isReadOnly}
-              className={errors.scholarshipAmountRequired ? 'border-red-500' : ''}
+              className={getInputStyling('scholarshipAmountRequired').className}
             />
             {errors.scholarshipAmountRequired && (
-              <p className="text-red-500 text-xs mt-1">{errors.scholarshipAmountRequired}</p>
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.scholarshipAmountRequired}</p>
             )}
           </div>
         </div>
@@ -1247,11 +1555,15 @@ export default function ProfileForm() {
                 checked={formData.awareness}
                 onCheckedChange={(checked) => handleInputChange('awareness', checked)}
                 disabled={isReadOnly}
+                className={errors.awareness ? 'border-red-500' : ''}
               />
-              <label htmlFor="awareness" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label htmlFor="awareness" className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${errors.awareness ? 'text-red-500' : ''}`}>
                 I am aware that the application will be rejected and appropriate action taken, if information provided by me is found to be false or misleading. <span className="text-red-500">*</span>
               </label>
             </div>
+            {errors.awareness && (
+              <p className="text-red-500 text-xs mt-1 font-medium ml-6">{errors.awareness}</p>
+            )}
             
             <div className="flex items-start space-x-2">
               <Checkbox
@@ -1259,11 +1571,15 @@ export default function ProfileForm() {
                 checked={formData.declaration}
                 onCheckedChange={(checked) => handleInputChange('declaration', checked)}
                 disabled={isReadOnly}
+                className={errors.declaration ? 'border-red-500' : ''}
               />
-              <label htmlFor="declaration" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <label htmlFor="declaration" className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${errors.declaration ? 'text-red-500' : ''}`}>
                 I hereby declare that all the information provided by me in the application are completely true and correct in particular. <span className="text-red-500">*</span>
               </label>
             </div>
+            {errors.declaration && (
+              <p className="text-red-500 text-xs mt-1 font-medium ml-6">{errors.declaration}</p>
+            )}
           </div>
         </div>
       </CardContent>
@@ -1349,12 +1665,7 @@ export default function ProfileForm() {
                 <Button 
                   type="button" 
                   onClick={handleNext}
-                  disabled={
-                    (currentStep === 1 && !isPersonalDetailsValid()) ||
-                    (currentStep === 2 && !isFamilyDetailsValid()) ||
-                    isReadOnly ||
-                    isSaving
-                  }
+                  disabled={isReadOnly || isSaving}
                   className="w-full sm:w-auto"
                 >
                   {isSaving ? (
@@ -1369,7 +1680,7 @@ export default function ProfileForm() {
               ) : (
                 <Button 
                   type="submit" 
-                  disabled={!isAllRequiredFieldsFilled() || hasAnyErrors() || isSubmitted || isSaving}
+                  disabled={isSubmitted || isSaving}
                   className="w-full sm:w-auto"
                 >
                   {isSaving ? (
@@ -1377,10 +1688,6 @@ export default function ProfileForm() {
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       Submitting...
                     </>
-                  ) : !isAllRequiredFieldsFilled() ? (
-                    'Complete All Sections to Submit'
-                  ) : hasAnyErrors() ? (
-                    'Fix All Errors to Submit'
                   ) : (
                     isSubmitted ? 'Profile Already Submitted' : 'Submit Profile'
                   )}

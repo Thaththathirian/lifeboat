@@ -299,3 +299,289 @@ export const getProfileDraft = async (): Promise<ProfileDraft | null> => {
     return null;
   }
 };
+
+// Student Profile API functions
+interface PersonalDetails {
+  firstName: string;
+  lastName: string;
+  gender: string;
+  dob: string;
+  street: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  mobile: string;
+  email: string;
+}
+
+interface FamilyDetails {
+  fatherName: string;
+  fatherOccupation: string;
+  motherName: string;
+  motherOccupation: string;
+  parentsPhone: string;
+  familyDetails: string;
+  familyAnnualIncome: string;
+}
+
+interface AcademicDetails {
+  grade: string;
+  presentSemester: string;
+  academicYear: string;
+  collegeName: string;
+  collegePhone: string;
+  collegeEmail: string;
+  collegeWebsite: string;
+  referencePersonName: string;
+  referencePersonQualification: string;
+  referencePersonPosition: string;
+  totalCollegeFees: string;
+  scholarshipAmountRequired: string;
+  marks10th: string;
+  marks12th: string;
+  marksSem1: string;
+  marksSem2: string;
+  marksSem3: string;
+  marksSem4: string;
+  marksSem5: string;
+  marksSem6: string;
+  marksSem7: string;
+  marksSem8: string;
+  declaration: boolean;
+  arrears: string;
+  awareness: boolean;
+}
+
+// Get student personal details
+export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/get_personal_details`;
+    console.log('Fetching personal details from:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No personal details found
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || null;
+  } catch (error) {
+    console.error('Failed to get personal details:', error);
+    return null;
+  }
+};
+
+// Save student personal details
+export const savePersonalDetails = async (details: PersonalDetails): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/personal_details`;
+    console.log('Saving personal details to:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(details),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.success || false;
+  } catch (error) {
+    console.error('Failed to save personal details:', error);
+    throw error;
+  }
+};
+
+// Get student family details
+export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/get_family_details`;
+    console.log('Fetching family details from:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No family details found
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || null;
+  } catch (error) {
+    console.error('Failed to get family details:', error);
+    return null;
+  }
+};
+
+// Save student family details
+export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/family_details`;
+    console.log('Saving family details to:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(details),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.success || false;
+  } catch (error) {
+    console.error('Failed to save family details:', error);
+    throw error;
+  }
+};
+
+// Get student academic details
+export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/get_academic_details`;
+    console.log('Fetching academic details from:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No academic details found
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || null;
+  } catch (error) {
+    console.error('Failed to get academic details:', error);
+    return null;
+  }
+};
+
+// Save student academic details
+export const saveAcademicDetails = async (details: AcademicDetails): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/academic_details`;
+    console.log('Saving academic details to:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(details),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.success || false;
+  } catch (error) {
+    console.error('Failed to save academic details:', error);
+    throw error;
+  }
+};
