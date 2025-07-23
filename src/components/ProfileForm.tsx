@@ -352,8 +352,9 @@ export default function ProfileForm() {
 
   // Check if user is authenticated
   const isAuthenticated = () => {
-    const token = localStorage.getItem('authToken');
-    return !!token;
+    const currentUser = localStorage.getItem('currentUser');
+    const googleUserData = localStorage.getItem('googleUserData');
+    return !!(currentUser || googleUserData);
   };
 
   // Auto-save function for form changes

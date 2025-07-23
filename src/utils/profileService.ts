@@ -68,14 +68,14 @@ const cache = {
 // Check if user is in "Profile Pending" status
 const isProfilePending = (): boolean => {
   const currentUser = localStorage.getItem('currentUser');
-  if (!currentUser) return false;
+  const googleUserData = localStorage.getItem('googleUserData');
   
-  try {
-    const user = JSON.parse(currentUser);
-    return user.status === 'Profile Pending';
-  } catch {
-    return false;
+  // If user has completed OTP verification, they should be in pending status
+  if (currentUser || googleUserData) {
+    return true; // User is authenticated and should be in pending status
   }
+  
+  return false;
 };
 
 // Check if user has any saved data
@@ -110,16 +110,12 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
       },
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        console.log('User not authenticated for personal details');
-        return null;
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.log(`API call failed with status: ${response.status}`);
+      return null;
     }
 
     const data = await response.json();
@@ -161,16 +157,12 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
       },
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        console.log('User not authenticated for family details');
-        return null;
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.log(`API call failed with status: ${response.status}`);
+      return null;
     }
 
     const data = await response.json();
@@ -212,16 +204,12 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
       },
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        console.log('User not authenticated for academic details');
-        return null;
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.log(`API call failed with status: ${response.status}`);
+      return null;
     }
 
     const data = await response.json();
@@ -250,13 +238,13 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<boo
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
       },
       body: JSON.stringify(details),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.log(`API call failed with status: ${response.status}`);
+      return false;
     }
 
     const data = await response.json();
@@ -286,13 +274,13 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
       },
       body: JSON.stringify(details),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.log(`API call failed with status: ${response.status}`);
+      return false;
     }
 
     const data = await response.json();
@@ -322,13 +310,13 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<boo
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}`,
       },
       body: JSON.stringify(details),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.log(`API call failed with status: ${response.status}`);
+      return false;
     }
 
     const data = await response.json();
