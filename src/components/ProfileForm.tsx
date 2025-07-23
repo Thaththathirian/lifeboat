@@ -8,16 +8,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  saveProfileDraft, 
-  getProfileDraft,
+import {
   getPersonalDetails,
   savePersonalDetails,
   getFamilyDetails,
   saveFamilyDetails,
   getAcademicDetails,
-  saveAcademicDetails
-} from "@/utils/backendService";
+  saveAcademicDetails,
+  clearProfileCache,
+  getCacheStatus,
+} from "@/utils/profileService";
 
 export default function ProfileForm() {
   const { profile, setProfile } = useStudent();
@@ -103,12 +103,11 @@ export default function ProfileForm() {
           return;
         }
         
-        // Load data from all three sections
-        const [personalDetails, familyDetails, academicDetails, draftData] = await Promise.allSettled([
+        // Load data from all three sections with caching
+        const [personalDetails, familyDetails, academicDetails] = await Promise.allSettled([
           getPersonalDetails(),
           getFamilyDetails(),
-          getAcademicDetails(),
-          getProfileDraft()
+          getAcademicDetails()
         ]);
 
         // Update form data with fetched data
@@ -129,14 +128,11 @@ export default function ProfileForm() {
           Object.assign(updatedFormData, academicDetails.value);
         }
 
-        // Draft data (if no server data exists)
-        if (draftData.status === 'fulfilled' && draftData.value && 
-            !personalDetails.value && !familyDetails.value && !academicDetails.value) {
-          setFormData(draftData.value.formData);
-          setCurrentStep(draftData.value.currentStep);
-        } else {
-          setFormData(updatedFormData);
-        }
+        // Set form data with fetched data
+        setFormData(updatedFormData);
+        
+        // Log cache status for debugging
+        console.log('Cache status:', getCacheStatus());
 
       } catch (error) {
         console.error('Error loading profile data:', error);
@@ -429,33 +425,14 @@ export default function ProfileForm() {
         await saveAcademicDetails(academicDetails);
       }
       
-      // Also save to draft as backup
-      await saveProfileDraft({
-        formData: updatedFormData,
-        currentStep,
-        lastSaved: new Date().toISOString()
-      });
+      // Cache is automatically updated by the save functions
     } catch (error) {
       console.error('Auto-save failed:', error);
       // Don't show error toast for auto-save to avoid spam
     }
   };
 
-  // Debounced auto-save effect
-  useEffect(() => {
-    if (!isLoading) {
-      // Check if user is authenticated before setting up auto-save
-      if (!isAuthenticated()) {
-        return; // Don't auto-save if not authenticated
-      }
-      
-      const timeoutId = setTimeout(() => {
-        autoSave(formData);
-      }, 2000); // Auto-save after 2 seconds of inactivity
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [formData, currentStep, isLoading]);
+  // Auto-save removed - data is saved when user clicks Next or Submit
 
   // Check if current step has any errors
   const hasCurrentStepErrors = () => {
@@ -747,7 +724,8 @@ export default function ProfileForm() {
       setStatus('Profile Under Verification');
       
       // Clear draft data after successful submission
-      await saveProfileDraft(null); // Clear draft
+              // Clear profile cache after successful submission
+        clearProfileCache();
       
       // Show success toast
       toast({
