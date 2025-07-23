@@ -1,0 +1,21 @@
+# Google OAuth Configuration
+# Copy this file to .env.local and fill in your actual secrets
+# DO NOT commit .env.local to version control
+
+VITE_GOOGLE_CLIENT_ID=your_google_client_id_here
+VITE_GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your_firebase_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain_here
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id_here
+VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket_here
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id_here
+VITE_FIREBASE_APP_ID=your_firebase_app_id_here
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id_here
+
+# Instructions:
+# 1. Copy this file to .env.local
+# 2. Replace the placeholder values with your actual secrets
+# 3. Never commit .env.local to git
+# 4. The application will automatically use these environment variables 
