@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,9 +29,6 @@ export default function ProfileForm() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
-  // Ref to track if data has been loaded to prevent duplicate API calls
-  const dataLoadedRef = useRef(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -97,25 +94,16 @@ export default function ProfileForm() {
 
   // Load profile data when component mounts
   useEffect(() => {
-    let isMounted = true;
-    
     const loadProfileData = async () => {
       try {
         // Only try to load data if user is authenticated
         if (!isAuthenticated()) {
           console.log('User not authenticated, skipping data load');
-          if (isMounted) setIsLoading(false);
+          setIsLoading(false);
           return;
         }
         
-        // Check if data has already been loaded to prevent duplicate calls
-        if (dataLoadedRef.current) {
-          console.log('Data already loaded, skipping duplicate API calls');
-          if (isMounted) setIsLoading(false);
-          return;
-        }
-        
-        console.log('Loading profile data from API...');
+
         
         // Load data from all three sections with caching
         const [personalDetails, familyDetails, academicDetails] = await Promise.allSettled([
@@ -142,12 +130,8 @@ export default function ProfileForm() {
           Object.assign(updatedFormData, academicDetails.value);
         }
 
-        // Set form data with fetched data only if component is still mounted
-        if (isMounted) {
-          setFormData(updatedFormData);
-          dataLoadedRef.current = true; // Mark as loaded
-          console.log('Profile data loaded successfully');
-        }
+        // Set form data with fetched data
+        setFormData(updatedFormData);
         
         // Log cache status for debugging
         console.log('Cache status:', getCacheStatus());
@@ -157,19 +141,12 @@ export default function ProfileForm() {
         // Don't show error toast for data loading to avoid spam
         // Just log the error and continue with empty form
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     loadProfileData();
-    
-    // Cleanup function to prevent state updates on unmounted component
-    return () => {
-      isMounted = false;
-    };
-  }, []); // Empty dependency array - only run once on mount
+  }, []);
 
   // Validation patterns
   const patterns = {
@@ -751,9 +728,6 @@ export default function ProfileForm() {
       
       // Clear profile cache after successful submission
       clearProfileCache();
-      
-      // Reset data loaded flag for fresh start
-      dataLoadedRef.current = false;
       
       // Show success toast
       toast({

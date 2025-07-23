@@ -53,7 +53,7 @@ const cache = {
 
 // Get API base URL
 const getApiBaseUrl = () => {
-  return 'http://localhost:3001'; // Backend API server
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost/lifeboat';
 };
 
 // Helper function to get student ID (in production, this would come from auth)
@@ -112,7 +112,7 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
   }
 
   console.log('Fetching personal details from API');
-  const result = await makeApiCall('/lifeboat/Student/get_personal_details', 'GET');
+  const result = await makeApiCall('/Student/get_personal_details', 'GET');
   
   if (result && result.status === true && result.data) {
     cache.personalDetails = result.data;
@@ -127,7 +127,7 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
 // POST Personal Details
 export const savePersonalDetails = async (details: PersonalDetails): Promise<boolean> => {
   console.log('Saving personal details to API');
-  const result = await makeApiCall('/lifeboat/Student/personal_details', 'POST', details);
+  const result = await makeApiCall('/Student/personal_details', 'POST', details);
   
   if (result && result.status === true) {
     // Update cache
@@ -149,7 +149,7 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
   }
 
   console.log('Fetching family details from API');
-  const result = await makeApiCall('/lifeboat/Student/get_family_details', 'GET');
+  const result = await makeApiCall('/Student/get_family_details', 'GET');
   
   if (result && result.status === true && result.data) {
     cache.familyDetails = result.data;
@@ -164,7 +164,7 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
 // POST Family Details
 export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean> => {
   console.log('Saving family details to API');
-  const result = await makeApiCall('/lifeboat/Student/family_details', 'POST', details);
+  const result = await makeApiCall('/Student/family_details', 'POST', details);
   
   if (result && result.status === true) {
     // Update cache
@@ -186,7 +186,7 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
   }
 
   console.log('Fetching academic details from API');
-  const result = await makeApiCall('/lifeboat/Student/get_academic_details', 'GET');
+  const result = await makeApiCall('/Student/get_academic_details', 'GET');
   
   if (result && result.status === true && result.data) {
     cache.academicDetails = result.data;
@@ -201,7 +201,7 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
 // POST Academic Details
 export const saveAcademicDetails = async (details: AcademicDetails): Promise<boolean> => {
   console.log('Saving academic details to API');
-  const result = await makeApiCall('/lifeboat/Student/academic_details', 'POST', details);
+  const result = await makeApiCall('/Student/academic_details', 'POST', details);
   
   if (result && result.status === true) {
     // Update cache

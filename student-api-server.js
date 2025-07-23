@@ -7,14 +7,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Use port 3001 for API server
+const PORT = process.env.PORT || 80; // Use port 80 for localhost/lifeboat
 
 // Middleware
 app.use(cors({
   origin: [
     'http://localhost:8080',
     'http://localhost:3000',
-    'http://localhost'
+    'http://localhost',
+    'http://localhost/lifeboat'
   ],
   credentials: true
 }));
@@ -44,7 +45,7 @@ const validateRequiredFields = (data, requiredFields) => {
 };
 
 // GET Personal Details
-app.get('/lifeboat/Student/get_personal_details', (req, res) => {
+app.get('/Student/get_personal_details', (req, res) => {
   try {
     const studentId = getStudentId(req);
     const data = studentData.get(`${studentId}_personal`);
@@ -73,7 +74,7 @@ app.get('/lifeboat/Student/get_personal_details', (req, res) => {
 });
 
 // POST Personal Details
-app.post('/lifeboat/Student/personal_details', (req, res) => {
+app.post('/Student/personal_details', (req, res) => {
   try {
     const studentId = getStudentId(req);
     const data = req.body;
@@ -109,7 +110,7 @@ app.post('/lifeboat/Student/personal_details', (req, res) => {
 });
 
 // GET Family Details
-app.get('/lifeboat/Student/get_family_details', (req, res) => {
+app.get('/Student/get_family_details', (req, res) => {
   try {
     const studentId = getStudentId(req);
     const data = studentData.get(`${studentId}_family`);
@@ -138,7 +139,7 @@ app.get('/lifeboat/Student/get_family_details', (req, res) => {
 });
 
 // POST Family Details
-app.post('/lifeboat/Student/family_details', (req, res) => {
+app.post('/Student/family_details', (req, res) => {
   try {
     const studentId = getStudentId(req);
     const data = req.body;
@@ -174,7 +175,7 @@ app.post('/lifeboat/Student/family_details', (req, res) => {
 });
 
 // GET Academic Details
-app.get('/lifeboat/Student/get_academic_details', (req, res) => {
+app.get('/Student/get_academic_details', (req, res) => {
   try {
     const studentId = getStudentId(req);
     const data = studentData.get(`${studentId}_academic`);
@@ -203,7 +204,7 @@ app.get('/lifeboat/Student/get_academic_details', (req, res) => {
 });
 
 // POST Academic Details
-app.post('/lifeboat/Student/academic_details', (req, res) => {
+app.post('/Student/academic_details', (req, res) => {
   try {
     const studentId = getStudentId(req);
     const data = req.body;
@@ -264,18 +265,18 @@ app.get('/health', (req, res) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`🎓 Student API Server running on port ${PORT}`);
-  console.log(`🔗 API Base URL: http://localhost:${PORT}/lifeboat/Student`);
-  console.log(`❤️  Health Check: http://localhost:${PORT}/health`);
+  console.log(`🔗 API Base URL: http://localhost/lifeboat/Student`);
+  console.log(`❤️  Health Check: http://localhost/health`);
   console.log('');
   console.log('📋 Available endpoints:');
-  console.log('   GET  /lifeboat/Student/get_personal_details');
-  console.log('   POST /lifeboat/Student/personal_details');
-  console.log('   GET  /lifeboat/Student/get_family_details');
-  console.log('   POST /lifeboat/Student/family_details');
-  console.log('   GET  /lifeboat/Student/get_academic_details');
-  console.log('   POST /lifeboat/Student/academic_details');
+  console.log('   GET  /Student/get_personal_details');
+  console.log('   POST /Student/personal_details');
+  console.log('   GET  /Student/get_family_details');
+  console.log('   POST /Student/family_details');
+  console.log('   GET  /Student/get_academic_details');
+  console.log('   POST /Student/academic_details');
   console.log('');
   console.log('💡 To test with curl:');
-  console.log('   curl -X GET http://localhost:3001/lifeboat/Student/get_personal_details');
-  console.log('   curl -X POST http://localhost:3001/lifeboat/Student/personal_details -H "Content-Type: application/json" -d \'{"firstName":"John","lastName":"Doe"}\'');
+  console.log('   curl -X GET http://localhost/lifeboat/Student/get_personal_details');
+  console.log('   curl -X POST http://localhost/lifeboat/Student/personal_details -H "Content-Type: application/json" -d \'{"firstName":"John","lastName":"Doe"}\'');
 }); 
