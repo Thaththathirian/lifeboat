@@ -7,7 +7,7 @@ import { GraduationCap, ArrowRight, Users, Award, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { googleProvider, getGoogleOAuthUrl, handleOAuthCallback, verifyOAuthConfiguration } from "@/utils/googleOAuth";
 import { useStudent } from "@/contexts/StudentContext";
-import { authenticateWithBackend } from "@/utils/backendService";
+// Backend service removed - using direct OAuth flow
 import OTPVerification from "@/components/OTPVerification";
 import { testFirebase, testRecaptcha } from "@/utils/firebase-test";
 
@@ -35,7 +35,7 @@ export default function StudentLandingPage() {
         if (oauthResult.success && 'user' in oauthResult && 'accessToken' in oauthResult) {
         // Process the OAuth result similar to Google Sign-In
           const successResult = oauthResult as { success: true; user: any; accessToken: string };
-          handleOAuthSuccess(successResult.user, successResult.accessToken);
+          // OAuth success handled directly in handleGoogleSignIn
       } else {
         toast({
           title: "OAuth Failed",
@@ -187,52 +187,24 @@ export default function StudentLandingPage() {
       // Send JWT token to backend for verification
       setIsLoading(true);
       
-      try {
-        const backendResponse = await authenticateWithBackend(
-          response.credential, // Send the full JWT token
-          googleUserData
-        );
-        
-        if (backendResponse.success) {
-          // Store backend token in localStorage
-          if (backendResponse.token) {
-            localStorage.setItem('authToken', backendResponse.token);
-          }
-          
-          // Store Google user data in localStorage for mobile verification page
-          localStorage.setItem('googleUserData', JSON.stringify(googleUserData));
-          
-          // Set user profile
-          setProfile({
-            ...googleUserData,
-            ...backendResponse.user
-          });
-          setStatus('Profile Pending');
-          
-          toast({
-            title: "Google Sign-In Successful",
-            description: `Welcome, ${googleUserData.name}! Redirecting to mobile verification...`,
-          });
-          
-          // Redirect to mobile verification page
-          navigate('/mobile-verification');
-        } else {
-          toast({
-            title: "Backend Verification Failed",
-            description: backendResponse.error || "Failed to verify with backend",
-            variant: "destructive",
-          });
-        }
-      } catch (backendError) {
-        console.error('Backend authentication failed:', backendError);
-        toast({
-          title: "Authentication Failed",
-          description: "Failed to verify with backend. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
+      // Store Google user data in localStorage for mobile verification page
+      localStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+      
+      // Set user profile
+      setProfile({
+        ...googleUserData
+      });
+      setStatus('Profile Pending');
+      
+      toast({
+        title: "Google Sign-In Successful",
+        description: `Welcome, ${googleUserData.name}! Redirecting to mobile verification...`,
+      });
+      
+      // Redirect to mobile verification page
+      navigate('/mobile-verification');
+      
+      setIsLoading(false);
       
     } catch (error) {
       console.error('Google Sign-In failed:', error);
@@ -245,61 +217,7 @@ export default function StudentLandingPage() {
     }
   };
 
-  // Send token to backend
-  const sendTokenToBackend = async (token: string, userData: GoogleUser) => {
-    return await authenticateWithBackend(token, userData);
-  };
 
-  // Handle OAuth success (for fallback method)
-  const handleOAuthSuccess = async (userData: GoogleUser, accessToken: string) => {
-    setIsLoading(true);
-    
-    try {
-      console.log('OAuth user data:', userData);
-      
-      // Send access token to backend
-      const backendResponse = await sendTokenToBackend(accessToken, userData);
-      
-      if (backendResponse.success) {
-        // Store backend token in localStorage
-        if (backendResponse.token) {
-          localStorage.setItem('authToken', backendResponse.token);
-        }
-        
-        // Set user profile and navigate to student dashboard
-        setProfile({
-          ...userData,
-          ...backendResponse.user
-        });
-        setStatus('Profile Pending');
-        
-        toast({
-          title: "Login Successful",
-          description: `Welcome, ${userData.name}! Redirecting to dashboard...`,
-        });
-        
-        // Clear the URL hash and navigate to student dashboard
-        window.location.hash = '';
-        navigate('/student');
-      } else {
-        toast({
-          title: "Login Failed",
-          description: backendResponse.error || "Failed to authenticate with backend",
-          variant: "destructive",
-        });
-      }
-      
-      setIsLoading(false);
-    } catch (error) {
-      console.error('OAuth success handling failed:', error);
-      setIsLoading(false);
-      toast({
-        title: "Login Failed",
-        description: "Please try again or contact support.",
-        variant: "destructive",
-      });
-    }
-  };
 
   // Trigger Google Sign-In
   const handleApplyNow = () => {
