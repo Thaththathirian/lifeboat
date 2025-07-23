@@ -8,7 +8,7 @@ import { Phone, ArrowLeft, CheckCircle, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
-import { sendOTP, verifyOTP, clearRecaptcha, getFirebaseIdToken } from "@/utils/firebase";
+import { sendOTP, verifyOTP, clearRecaptcha } from "@/utils/firebase";
 
 interface GoogleUser {
   id: string;
@@ -240,75 +240,32 @@ export default function MobileVerification() {
       const result = await verifyOTP(confirmationResult, otp);
       
       if (result.success && result.user) {
-        // Get Firebase ID token for authentication (current bearer token)
-        const idToken = await getFirebaseIdToken();
+        // Firebase verification successful - no backend needed
+        console.log('Firebase OTP verification successful:', result.user);
         
-        // Get OAuth response data from localStorage (new bearer token)
-        const oauthToken = localStorage.getItem('authToken');
-        
-        if (!oauthToken) {
-          console.error('OAuth token not found in localStorage');
-          console.log('Available localStorage keys:', Object.keys(localStorage));
-          throw new Error('OAuth token not found. Please login again.');
-        }
-        
-        console.log('Using OAuth token for verify_mobile API:', oauthToken.substring(0, 50) + '...');
-        
-        // Prepare headers with OAuth bearer token
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${oauthToken}`,
-        };
-        
-        // Firebase verification successful, now call your API
-        const apiResponse = await fetch('http://localhost/lifeboat/Student/verify_mobile', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({
-            mobileNumber: mobileNumber,
-            firebaseUid: result.user.uid,
-            action: 'verify_mobile',
-            token: idToken // Move current bearer token to payload
-          }),
+        // Update profile with combined data
+        setProfile({
+          ...profile,
+          mobile: mobileNumber,
+          firebaseUid: result.user.uid,
+          ...googleUserData
         });
-
-        if (!apiResponse.ok) {
-          const errorData = await apiResponse.json().catch(() => ({}));
-          throw new Error(errorData.message || `HTTP error! status: ${apiResponse.status}`);
-        }
-
-        const apiData = await apiResponse.json();
-        console.log('API Response:', apiData);
+        setStatus('Profile Pending');
         
-        if (apiData.status === true) {
-          // Update profile with combined data
-          setProfile({
-            ...profile,
-            mobile: mobileNumber,
-            firebaseUid: result.user.uid,
-            ...googleUserData
-          });
-          setStatus('Profile Pending');
-          
-          // Set current user for protected routes
-          setCurrentUser({
-            ...googleUserData,
-            mobile: mobileNumber,
-            firebaseUid: result.user.uid,
-          });
-          
-          toast({
-            title: "Verification Successful",
-            description: `Welcome, ${googleUserData.name}! Redirecting to dashboard...`,
-          });
-          
-          // Small delay to ensure state is updated before navigation
-          setTimeout(() => {
-            navigate('/student');
-          }, 100);
-        } else {
-          throw new Error(apiData.message || "Backend verification failed");
-        }
+        // Set current user for protected routes
+        setCurrentUser({
+          ...googleUserData,
+          mobile: mobileNumber,
+          firebaseUid: result.user.uid,
+        });
+        
+        toast({
+          title: "Verification Successful",
+          description: `Welcome, ${googleUserData.name}! Redirecting to dashboard...`,
+        });
+        
+        // Navigate to student dashboard
+        navigate('/student');
       } else {
         throw new Error(result.error || "Firebase verification failed");
       }
