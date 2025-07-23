@@ -45,6 +45,20 @@ export const authenticateWithBackend = async (
     // Use the correct API endpoint
     const apiUrl = `${getApiBaseUrl()}/OAuth/Student`;
     console.log('API URL:', apiUrl);
+    console.log('Full request details:', {
+      url: apiUrl,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${googleToken.substring(0, 20)}...`, // Log partial token for security
+      },
+      body: {
+        userData: userData,
+        recaptchaToken: recaptchaToken ? 'PRESENT' : 'MISSING',
+        tokenType: 'google_jwt',
+      }
+    });
     
     // Send JWT token in Authorization header for backend verification
     const response = await fetch(apiUrl, {

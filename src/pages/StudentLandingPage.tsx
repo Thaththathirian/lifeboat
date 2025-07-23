@@ -7,7 +7,7 @@ import { GraduationCap, ArrowRight, Users, Award, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { googleProvider, getGoogleOAuthUrl, handleOAuthCallback, verifyOAuthConfiguration } from "@/utils/googleOAuth";
 import { useStudent } from "@/contexts/StudentContext";
-// Backend service removed - using direct OAuth flow
+import { authenticateWithBackend } from "@/utils/backendService";
 import OTPVerification from "@/components/OTPVerification";
 import { testFirebase, testRecaptcha } from "@/utils/firebase-test";
 
@@ -31,28 +31,63 @@ export default function StudentLandingPage() {
     // Check if we're returning from Google OAuth
     if (window.location.hash.includes('access_token')) {
       console.log('Detected OAuth callback, processing...');
-      handleOAuthCallback().then((oauthResult) => {
+      handleOAuthCallback().then(async (oauthResult) => {
         if (oauthResult.success && 'user' in oauthResult && 'accessToken' in oauthResult) {
-        // Process the OAuth result similar to Google Sign-In
           const successResult = oauthResult as { success: true; user: any; accessToken: string };
-          // OAuth success handled directly in handleGoogleSignIn
-      } else {
-        toast({
-          title: "OAuth Failed",
-          description: oauthResult.error || "Failed to authenticate with Google",
-          variant: "destructive",
-        });
-      }
+          
+          // Call the OAuth verification API
+          console.log('Calling OAuth verification API from callback...');
+          const backendResponse = await authenticateWithBackend(
+            successResult.accessToken,
+            successResult.user
+          );
+          
+          if (backendResponse.success) {
+            console.log('Backend OAuth verification successful from callback:', backendResponse);
+            
+            // Store backend token if provided
+            if (backendResponse.token) {
+              localStorage.setItem('authToken', backendResponse.token);
+            }
+            
+            // Store Google user data
+            localStorage.setItem('googleUserData', JSON.stringify(successResult.user));
+            
+            // Set user profile with backend data
+            setProfile({
+              ...successResult.user,
+              ...backendResponse.user
+            });
+            setStatus('Profile Pending');
+            
+            toast({
+              title: "Google Sign-In Successful",
+              description: `Welcome, ${successResult.user.name}! Redirecting to mobile verification...`,
+            });
+            
+            // Clear URL hash and redirect
+            window.location.hash = '';
+            navigate('/mobile-verification');
+          } else {
+            throw new Error(backendResponse.error || 'Backend OAuth verification failed');
+          }
+        } else {
+          toast({
+            title: "OAuth Failed",
+            description: oauthResult.error || "Failed to authenticate with Google",
+            variant: "destructive",
+          });
+        }
       }).catch((error) => {
         console.error('OAuth callback error:', error);
         toast({
           title: "OAuth Failed",
-          description: "Failed to process OAuth callback",
+          description: error instanceof Error ? error.message : "Failed to process OAuth callback",
           variant: "destructive",
         });
       });
     }
-  }, []);
+  }, [navigate, setProfile, setStatus]);
 
   // Initialize Google OAuth
   useEffect(() => {
@@ -187,22 +222,41 @@ export default function StudentLandingPage() {
       // Send JWT token to backend for verification
       setIsLoading(true);
       
-      // Store Google user data in localStorage for mobile verification page
-      localStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+      // Call the OAuth verification API with the Google JWT token
+      console.log('Calling OAuth verification API...');
+      const backendResponse = await authenticateWithBackend(
+        response.credential, // Send the full JWT token
+        googleUserData
+      );
       
-      // Set user profile
-      setProfile({
-        ...googleUserData
-      });
-      setStatus('Profile Pending');
-      
-      toast({
-        title: "Google Sign-In Successful",
-        description: `Welcome, ${googleUserData.name}! Redirecting to mobile verification...`,
-      });
-      
-      // Redirect to mobile verification page
-      navigate('/mobile-verification');
+      if (backendResponse.success) {
+        console.log('Backend OAuth verification successful:', backendResponse);
+        
+        // Store backend token if provided
+        if (backendResponse.token) {
+          localStorage.setItem('authToken', backendResponse.token);
+        }
+        
+        // Store Google user data in localStorage for mobile verification page
+        localStorage.setItem('googleUserData', JSON.stringify(googleUserData));
+        
+        // Set user profile with backend data
+        setProfile({
+          ...googleUserData,
+          ...backendResponse.user
+        });
+        setStatus('Profile Pending');
+        
+        toast({
+          title: "Google Sign-In Successful",
+          description: `Welcome, ${googleUserData.name}! Redirecting to mobile verification...`,
+        });
+        
+        // Redirect to mobile verification page
+        navigate('/mobile-verification');
+      } else {
+        throw new Error(backendResponse.error || 'Backend OAuth verification failed');
+      }
       
       setIsLoading(false);
       
@@ -211,7 +265,7 @@ export default function StudentLandingPage() {
       setIsLoading(false);
       toast({
         title: "Google Login Failed",
-        description: "Please try again or contact support.",
+        description: error instanceof Error ? error.message : "Please try again or contact support.",
         variant: "destructive",
       });
     }

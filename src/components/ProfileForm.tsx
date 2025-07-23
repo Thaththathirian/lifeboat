@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
+import CollegeDropdown from "./CollegeDropdown";
 import {
   getPersonalDetails,
   savePersonalDetails,
@@ -64,6 +65,8 @@ export default function ProfileForm() {
     referencePersonName: profile?.referencePersonName || "",
     referencePersonQualification: profile?.referencePersonQualification || "",
     referencePersonPosition: profile?.referencePersonPosition || "",
+    referencePersonPhone: profile?.referencePersonPhone || "",
+    referencePersonEmail: profile?.referencePersonEmail || "",
     totalCollegeFees: profile?.totalCollegeFees || "",
     scholarshipAmountRequired: profile?.scholarshipAmountRequired || "",
     marks10th: profile?.marks10th || "",
@@ -82,6 +85,7 @@ export default function ProfileForm() {
   });
 
   const [otherCollege, setOtherCollege] = useState("");
+  const [selectedCollege, setSelectedCollege] = useState<any>(null);
 
   // Helper function to get input styling based on errors
   const getInputStyling = (fieldName: string) => {
@@ -248,6 +252,16 @@ export default function ProfileForm() {
     return { isValid: true, error: '' };
   };
 
+  const handleCollegeSelect = (college: any) => {
+    setSelectedCollege(college);
+    if (college) {
+      // Auto-fill college details when a college is selected
+      handleInputChange('collegePhone', college.mobile);
+      handleInputChange('collegeEmail', college.email);
+      handleInputChange('collegeWebsite', college.website);
+    }
+  };
+
   const handleInputChange = (field: string, value: string | number | boolean) => {
     // Apply validation and filtering based on field type
     let validatedValue = value;
@@ -409,6 +423,8 @@ export default function ProfileForm() {
           referencePersonName: updatedFormData.referencePersonName,
           referencePersonQualification: updatedFormData.referencePersonQualification,
           referencePersonPosition: updatedFormData.referencePersonPosition,
+          referencePersonPhone: updatedFormData.referencePersonPhone || "",
+          referencePersonEmail: updatedFormData.referencePersonEmail || "",
           totalCollegeFees: updatedFormData.totalCollegeFees,
           scholarshipAmountRequired: updatedFormData.scholarshipAmountRequired,
           marks10th: updatedFormData.marks10th,
@@ -690,6 +706,8 @@ export default function ProfileForm() {
         referencePersonName: formData.referencePersonName,
         referencePersonQualification: formData.referencePersonQualification,
         referencePersonPosition: formData.referencePersonPosition,
+        referencePersonPhone: formData.referencePersonPhone || "",
+        referencePersonEmail: formData.referencePersonEmail || "",
         totalCollegeFees: formData.totalCollegeFees,
         scholarshipAmountRequired: formData.scholarshipAmountRequired,
         marks10th: formData.marks10th,
@@ -1258,17 +1276,17 @@ export default function ProfileForm() {
             <label className="block text-sm font-medium mb-2">
               College Name <span className="text-red-500">*</span>
             </label>
-          <Input 
-            placeholder="Enter college name" 
-            value={formData.collegeName}
-            onChange={(e) => handleInputChange('collegeName', e.target.value)}
-            disabled={isReadOnly}
-            className={getInputStyling('collegeName').className}
-          />
-          {errors.collegeName && (
-            <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeName}</p>
-          )}
-        </div>
+            <CollegeDropdown
+              value={formData.collegeName}
+              onValueChange={(value) => handleInputChange('collegeName', value)}
+              onCollegeSelect={handleCollegeSelect}
+              disabled={isReadOnly}
+              className={getInputStyling('collegeName').className}
+            />
+            {errors.collegeName && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeName}</p>
+            )}
+          </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>

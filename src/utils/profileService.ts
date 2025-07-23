@@ -35,8 +35,24 @@ interface AcademicDetails {
   collegeWebsite: string;
   referencePersonName: string;
   referencePersonQualification: string;
+  referencePersonPosition: string;
   referencePersonPhone: string;
   referencePersonEmail: string;
+  totalCollegeFees: string;
+  scholarshipAmountRequired: string;
+  marks10th: string;
+  marks12th: string;
+  marksSem1: string;
+  marksSem2: string;
+  marksSem3: string;
+  marksSem4: string;
+  marksSem5: string;
+  marksSem6: string;
+  marksSem7: string;
+  marksSem8: string;
+  declaration: boolean;
+  arrears: string;
+  awareness: boolean;
 }
 
 // Cache for API responses to avoid repeated calls

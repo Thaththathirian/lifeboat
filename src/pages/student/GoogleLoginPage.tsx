@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { useStudent } from "@/contexts/StudentContext";
 import { authenticateWithBackend } from "@/utils/backendService";
 import { googleProvider, handleOAuthCallback } from "@/utils/googleOAuth";
+import { debugOAuthFlow } from "@/utils/oauthDebug";
 
 interface GoogleUser {
   id: string;
@@ -25,6 +26,9 @@ export default function GoogleLoginPage() {
 
   // Check for OAuth callback on page load
   useEffect(() => {
+    // Run debug first
+    debugOAuthFlow.runComprehensiveDebug();
+    
     // Check if we're returning from Google OAuth
     if (window.location.hash.includes('access_token')) {
       console.log('Detected OAuth callback, processing...');
@@ -41,16 +45,19 @@ export default function GoogleLoginPage() {
     
     try {
       console.log('Processing OAuth callback...');
-      const oauthResult = handleOAuthCallback();
+      const oauthResult = await handleOAuthCallback();
       
       if (oauthResult.success && oauthResult.user) {
-        console.log('OAuth successful, user data:', oauthResult.user);
-        
-        // Send access token to backend
-        const backendResponse = await authenticateWithBackend(
-          oauthResult.accessToken!, 
-          oauthResult.user
-        );
+              console.log('OAuth successful, user data:', oauthResult.user);
+      
+      // Debug token transmission
+      await debugOAuthFlow.testTokenTransmission(oauthResult.accessToken!, oauthResult.user);
+      
+      // Send access token to backend
+      const backendResponse = await authenticateWithBackend(
+        oauthResult.accessToken!, 
+        oauthResult.user
+      );
         
         if (backendResponse.success) {
           // Store backend token
