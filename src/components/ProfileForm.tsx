@@ -16,8 +16,7 @@ import {
   getAcademicDetails,
   saveAcademicDetails,
   clearProfileCache,
-  setProfileCompleted,
-  isProfileCompleted,
+  getCacheStatus,
 } from "@/utils/profileService";
 
 export default function ProfileForm() {
@@ -104,12 +103,7 @@ export default function ProfileForm() {
           return;
         }
         
-        // Check if profile is completed - if so, don't load data
-        if (isProfileCompleted()) {
-          console.log('Profile is completed, skipping data load');
-          setIsLoading(false);
-          return;
-        }
+
         
         // Load data from all three sections with caching
         const [personalDetails, familyDetails, academicDetails] = await Promise.allSettled([
@@ -139,8 +133,8 @@ export default function ProfileForm() {
         // Set form data with fetched data
         setFormData(updatedFormData);
         
-        // Log profile completion status for debugging
-        console.log('Profile completed:', isProfileCompleted());
+        // Log cache status for debugging
+        console.log('Cache status:', getCacheStatus());
 
       } catch (error) {
         console.error('Error loading profile data:', error);
@@ -731,9 +725,6 @@ export default function ProfileForm() {
       
       // Update status to Profile Under Verification
       setStatus('Profile Under Verification');
-      
-      // Mark profile as completed
-      setProfileCompleted(true);
       
       // Clear profile cache after successful submission
       clearProfileCache();

@@ -1,7 +1,6 @@
 // src/utils/profileService.ts
 // This file contains the service for managing student profile details
-// It simulates API calls using local storage for caching and persistence,
-// as per the requirement to not use a real backend in this project.
+// It makes real API calls to the backend server for data persistence
 
 interface PersonalDetails {
   firstName: string;
@@ -40,171 +39,198 @@ interface AcademicDetails {
   referencePersonEmail: string;
 }
 
-// Local in-memory cache for profile data
-const profileCache = {
-  personal: null as PersonalDetails | null,
-  family: null as FamilyDetails | null,
-  academic: null as AcademicDetails | null,
-};
-
-// Keys for localStorage to persist cached data and profile completion status
-const LS_PROFILE_COMPLETED_KEY = 'profileCompleted';
-const LS_PERSONAL_DETAILS_KEY = 'cachedPersonalDetails';
-const LS_FAMILY_DETAILS_KEY = 'cachedFamilyDetails';
-const LS_ACADEMIC_DETAILS_KEY = 'cachedAcademicDetails';
-
-/**
- * Checks if the user's profile has been marked as completed.
- * @returns {boolean} True if the profile is completed, false otherwise.
- */
-export const isProfileCompleted = (): boolean => {
-  return localStorage.getItem(LS_PROFILE_COMPLETED_KEY) === 'true';
-};
-
-/**
- * Sets the profile completion status.
- * @param {boolean} completed - True to mark profile as completed, false otherwise.
- */
-export const setProfileCompleted = (completed: boolean) => {
-  localStorage.setItem(LS_PROFILE_COMPLETED_KEY, String(completed));
-  console.log(`Profile completion status set to: ${completed}`);
-};
-
-/**
- * Clears all profile-related data from both in-memory cache and localStorage.
- * This should be called after a successful full profile submission.
- */
-export const clearProfileCache = () => {
-  profileCache.personal = null;
-  profileCache.family = null;
-  profileCache.academic = null;
-  localStorage.removeItem(LS_PERSONAL_DETAILS_KEY);
-  localStorage.removeItem(LS_FAMILY_DETAILS_KEY);
-  localStorage.removeItem(LS_ACADEMIC_DETAILS_KEY);
-  localStorage.removeItem(LS_PROFILE_COMPLETED_KEY);
-  console.log('Profile cache and completion status cleared.');
-};
-
-/**
- * Simulates a GET API call for profile data.
- * It checks local cache and localStorage first. If the profile is completed,
- * it will not "fetch" new data. If in "Profile Pending" state and no data exists,
- * it returns default empty data.
- * @param {string} key - The key for the specific profile section (e.g., 'personal', 'family', 'academic').
- * @param {T | null} defaultData - Default data to return if no existing data is found.
- * @returns {Promise<T | null>} A promise that resolves with the data or null.
- */
-const simulateGet = async <T>(key: string, defaultData: T | null = null): Promise<T | null> => {
-  console.log(`Simulating GET for ${key}...`);
-
-  // 1. Check in-memory cache first
-  if (profileCache[key as keyof typeof profileCache]) {
-    console.log(`Returning in-memory cached data for ${key}.`);
-    return profileCache[key as keyof typeof profileCache] as T;
+// Cache for API responses to avoid repeated calls
+const cache = {
+  personalDetails: null as PersonalDetails | null,
+  familyDetails: null as FamilyDetails | null,
+  academicDetails: null as AcademicDetails | null,
+  lastFetch: {
+    personalDetails: 0,
+    familyDetails: 0,
+    academicDetails: 0
   }
+};
 
-  // 2. Check localStorage for persisted cache
-  const localStorageKey = `cached${key.charAt(0).toUpperCase() + key.slice(1)}Details`;
-  const storedData = localStorage.getItem(localStorageKey);
-  if (storedData) {
+// Get API base URL
+const getApiBaseUrl = () => {
+  return 'http://localhost:3001'; // Backend API server
+};
+
+// Helper function to get student ID (in production, this would come from auth)
+const getStudentId = () => {
+  const currentUser = localStorage.getItem('currentUser');
+  if (currentUser) {
     try {
-      const parsedData = JSON.parse(storedData);
-      profileCache[key as keyof typeof profileCache] = parsedData; // Update in-memory cache
-      console.log(`Returning localStorage data for ${key}.`);
-      return parsedData;
-    } catch (e) {
-      console.error(`Error parsing stored data for ${key} from localStorage:`, e);
-      localStorage.removeItem(localStorageKey); // Clear corrupted data
+      const user = JSON.parse(currentUser);
+      return user.id || 'default-student-123';
+    } catch {
+      return 'default-student-123';
     }
   }
+  return 'default-student-123';
+};
 
-  // 3. If profile is completed, and no cached data, don't "call" API, return null.
-  // This addresses "if user not created any data and saved to backed, then dont call get api calls"
-  // by assuming "completed" means data is already there or not needed.
-  if (isProfileCompleted()) {
-    console.log(`Profile completed, not fetching new data for ${key}.`);
-    return null;
+// Helper function to make API calls
+const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any) => {
+  const url = `${getApiBaseUrl()}${endpoint}`;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'X-Student-ID': getStudentId()
+  };
+
+  const config: RequestInit = {
+    method,
+    headers,
+  };
+
+  if (data && method === 'POST') {
+    config.body = JSON.stringify(data);
   }
 
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 300));
+  try {
+    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      console.error(`API call failed: ${response.status} ${response.statusText}`);
+      return null;
+    }
 
-  // 4. If user is in "Profile Pending" (i.e., not completed) and no data exists,
-  // simulate an empty response to provide initial form data.
-  console.log(`Simulating empty response for ${key} (Profile Pending, no existing data).`);
-  return defaultData;
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('API call error:', error);
+    return null;
+  }
 };
-
-/**
- * Simulates a POST API call for profile data.
- * It stores the data in local storage and returns success, without making a network call.
- * @param {string} key - The key for the specific profile section (e.g., 'personal', 'family', 'academic').
- * @param {T} data - The data to "save".
- * @returns {Promise<boolean>} A promise that resolves with true for success.
- */
-const simulatePost = async <T>(key: string, data: T): Promise<boolean> => {
-  console.log(`Simulating POST for ${key} with data:`, data);
-  await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call delay
-
-  // Store data in local cache and localStorage
-  profileCache[key as keyof typeof profileCache] = data;
-  localStorage.setItem(`cached${key.charAt(0).toUpperCase() + key.slice(1)}Details`, JSON.stringify(data));
-
-  console.log(`Simulated POST successful for ${key}. Data cached.`);
-  return true;
-};
-
-// --- Exported Functions for Profile Sections ---
 
 // GET Personal Details
 export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
-  return simulateGet<PersonalDetails>('personal', {
-    firstName: '', lastName: '', gender: '', dob: '', street: '', city: '',
-    state: '', pinCode: '', mobile: '', email: ''
-  });
+  // Check cache first (5 minutes cache)
+  if (cache.personalDetails && Date.now() - cache.lastFetch.personalDetails < 300000) {
+    console.log('Returning cached personal details');
+    return cache.personalDetails;
+  }
+
+  console.log('Fetching personal details from API');
+  const result = await makeApiCall('/lifeboat/Student/get_personal_details', 'GET');
+  
+  if (result && result.status === true && result.data) {
+    cache.personalDetails = result.data;
+    cache.lastFetch.personalDetails = Date.now();
+    console.log('Personal details cached successfully');
+    return result.data;
+  }
+  
+  return null;
 };
 
 // POST Personal Details
 export const savePersonalDetails = async (details: PersonalDetails): Promise<boolean> => {
-  return simulatePost<PersonalDetails>('personal', details);
+  console.log('Saving personal details to API');
+  const result = await makeApiCall('/lifeboat/Student/personal_details', 'POST', details);
+  
+  if (result && result.status === true) {
+    // Update cache
+    cache.personalDetails = details;
+    cache.lastFetch.personalDetails = Date.now();
+    console.log('Personal details saved and cached');
+    return true;
+  }
+  
+  return false;
 };
 
 // GET Family Details
 export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
-  return simulateGet<FamilyDetails>('family', {
-    fatherName: '', fatherOccupation: '', motherName: '', motherOccupation: '',
-    parentsPhone: '', familyDetails: '', familyAnnualIncome: ''
-  });
+  // Check cache first (5 minutes cache)
+  if (cache.familyDetails && Date.now() - cache.lastFetch.familyDetails < 300000) {
+    console.log('Returning cached family details');
+    return cache.familyDetails;
+  }
+
+  console.log('Fetching family details from API');
+  const result = await makeApiCall('/lifeboat/Student/get_family_details', 'GET');
+  
+  if (result && result.status === true && result.data) {
+    cache.familyDetails = result.data;
+    cache.lastFetch.familyDetails = Date.now();
+    console.log('Family details cached successfully');
+    return result.data;
+  }
+  
+  return null;
 };
 
 // POST Family Details
 export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean> => {
-  return simulatePost<FamilyDetails>('family', details);
+  console.log('Saving family details to API');
+  const result = await makeApiCall('/lifeboat/Student/family_details', 'POST', details);
+  
+  if (result && result.status === true) {
+    // Update cache
+    cache.familyDetails = details;
+    cache.lastFetch.familyDetails = Date.now();
+    console.log('Family details saved and cached');
+    return true;
+  }
+  
+  return false;
 };
 
 // GET Academic Details
 export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
-  return simulateGet<AcademicDetails>('academic', {
-    grade: '', presentSemester: '', academicYear: '', collegeName: '',
-    collegePhone: '', collegeEmail: '', collegeWebsite: '',
-    referencePersonName: '', referencePersonQualification: '', referencePersonPhone: '',
-    referencePersonEmail: ''
-  });
+  // Check cache first (5 minutes cache)
+  if (cache.academicDetails && Date.now() - cache.lastFetch.academicDetails < 300000) {
+    console.log('Returning cached academic details');
+    return cache.academicDetails;
+  }
+
+  console.log('Fetching academic details from API');
+  const result = await makeApiCall('/lifeboat/Student/get_academic_details', 'GET');
+  
+  if (result && result.status === true && result.data) {
+    cache.academicDetails = result.data;
+    cache.lastFetch.academicDetails = Date.now();
+    console.log('Academic details cached successfully');
+    return result.data;
+  }
+  
+  return null;
 };
 
 // POST Academic Details
 export const saveAcademicDetails = async (details: AcademicDetails): Promise<boolean> => {
-  return simulatePost<AcademicDetails>('academic', details);
+  console.log('Saving academic details to API');
+  const result = await makeApiCall('/lifeboat/Student/academic_details', 'POST', details);
+  
+  if (result && result.status === true) {
+    // Update cache
+    cache.academicDetails = details;
+    cache.lastFetch.academicDetails = Date.now();
+    console.log('Academic details saved and cached');
+    return true;
+  }
+  
+  return false;
 };
 
-// --- Initialization ---
-// Load initial cache from localStorage when the service is imported
-(() => {
-  const personal = localStorage.getItem(LS_PERSONAL_DETAILS_KEY);
-  if (personal) profileCache.personal = JSON.parse(personal);
-  const family = localStorage.getItem(LS_FAMILY_DETAILS_KEY);
-  if (family) profileCache.family = JSON.parse(family);
-  const academic = localStorage.getItem(LS_ACADEMIC_DETAILS_KEY);
-  if (academic) profileCache.academic = JSON.parse(academic);
-  console.log('Profile service initialized. Cache loaded from localStorage.');
-})(); 
+// Clear cache (useful for logout or after successful submission)
+export const clearProfileCache = () => {
+  cache.personalDetails = null;
+  cache.familyDetails = null;
+  cache.academicDetails = null;
+  cache.lastFetch.personalDetails = 0;
+  cache.lastFetch.familyDetails = 0;
+  cache.lastFetch.academicDetails = 0;
+  console.log('Profile cache cleared');
+};
+
+// Get cache status for debugging
+export const getCacheStatus = () => {
+  return {
+    personalDetails: !!cache.personalDetails,
+    familyDetails: !!cache.familyDetails,
+    academicDetails: !!cache.academicDetails,
+    lastFetch: cache.lastFetch
+  };
+}; 
