@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronDown } from "lucide-react";
 
 interface College {
   id: string;
@@ -41,22 +39,25 @@ export default function CollegeDropdown({
   const fetchColleges = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://localhost/lifeboat/Admin/get_verified_colleges');
+      const response = await fetch('http://localhost/lifeboat/Admin/get_verified_colleges');
       const data = await response.json();
       
       if (data.status && data.data) {
         setColleges(data.data);
       } else {
         console.error('Failed to fetch colleges:', data.message);
+        setColleges([]); // Set empty array to show fallback
       }
     } catch (error) {
       console.error('Error fetching colleges:', error);
+      setColleges([]); // Set empty array to show fallback
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log('CollegeDropdown: useEffect called');
     fetchColleges();
   }, []);
 
@@ -80,32 +81,37 @@ export default function CollegeDropdown({
     }));
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="relative">
-        <Select value={value} onValueChange={handleCollegeChange} disabled={disabled}>
-          <SelectTrigger className={`w-1/2 ${className}`}>
-            <SelectValue placeholder="Select college" />
-            <ChevronDown className="h-4 w-4 opacity-50" />
-          </SelectTrigger>
-          <SelectContent>
+  try {
+    console.log('CollegeDropdown: Rendering with', { colleges: colleges.length, isLoading, value });
+    return (
+      <div className="space-y-4">
+        <div className="relative">
+          <select 
+            value={value} 
+            onChange={(e) => handleCollegeChange(e.target.value)} 
+            disabled={disabled}
+            className={`w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+          >
+            <option value="">Select college</option>
             {isLoading ? (
-              <SelectItem value="" disabled>
-                Loading colleges...
-              </SelectItem>
-            ) : (
+              <option value="loading" disabled>Loading colleges...</option>
+            ) : colleges.length > 0 ? (
               <>
                 {colleges.map((college) => (
-                  <SelectItem key={college.id} value={college.id}>
+                  <option key={college.id} value={college.id}>
                     {college.name}
-                  </SelectItem>
+                  </option>
                 ))}
-                <SelectItem value="other">Other</SelectItem>
+                <option value="other">Other</option>
+              </>
+            ) : (
+              <>
+                <option value="no-colleges" disabled>No colleges available</option>
+                <option value="other">Other</option>
               </>
             )}
-          </SelectContent>
-        </Select>
-      </div>
+          </select>
+        </div>
 
       {showOtherFields && (
         <div className="space-y-4 border-l-2 border-blue-200 pl-4">
@@ -175,4 +181,24 @@ export default function CollegeDropdown({
       )}
     </div>
   );
+  } catch (error) {
+    console.error('Error rendering CollegeDropdown:', error);
+    // Fallback to simple input if Select component fails
+    return (
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            College Name <span className="text-red-500">*</span>
+          </label>
+          <Input
+            placeholder="Enter college name"
+            value={value}
+            onChange={(e) => onValueChange(e.target.value)}
+            disabled={disabled}
+            className={className}
+          />
+        </div>
+      </div>
+    );
+  }
 } 

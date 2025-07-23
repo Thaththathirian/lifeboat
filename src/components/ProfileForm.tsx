@@ -30,6 +30,7 @@ export default function ProfileForm() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasLoadedData, setHasLoadedData] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -106,8 +107,35 @@ export default function ProfileForm() {
           setIsLoading(false);
           return;
         }
-        
 
+        // Check if profile is already submitted - if so, don't make API calls
+        if (profile?.submitted) {
+          console.log('Profile already submitted, skipping API calls');
+          setIsLoading(false);
+          return;
+        }
+
+        // Check if data has already been loaded using localStorage
+        const hasLoadedKey = 'profileDataLoaded';
+        const sessionKey = 'profileDataSession';
+        const currentSession = Date.now().toString();
+        
+        if (localStorage.getItem(hasLoadedKey)) {
+          console.log('Data already loaded in this session, skipping API calls');
+          setIsLoading(false);
+          return;
+        }
+        
+        // Set session flag to prevent multiple calls
+        localStorage.setItem(sessionKey, currentSession);
+        
+        // Check if another session is already in progress
+        const existingSession = localStorage.getItem(sessionKey);
+        if (existingSession && existingSession !== currentSession) {
+          console.log('Another session is already loading data, skipping...');
+          setIsLoading(false);
+          return;
+        }
         
         // Load data from all three sections with caching
         const [personalDetails, familyDetails, academicDetails] = await Promise.allSettled([
@@ -137,6 +165,13 @@ export default function ProfileForm() {
         // Set form data with fetched data
         setFormData(updatedFormData);
         
+        // Mark that data has been loaded using localStorage
+        localStorage.setItem(hasLoadedKey, 'true');
+        setHasLoadedData(true);
+        
+        // Clear session flag after successful load
+        localStorage.removeItem(sessionKey);
+        
         // Log cache status for debugging
         console.log('Cache status:', getCacheStatus());
 
@@ -150,7 +185,14 @@ export default function ProfileForm() {
     };
 
     loadProfileData();
-  }, []);
+
+    // Cleanup function to clear the flag when component unmounts
+    return () => {
+      // Clear the flag when component unmounts
+      localStorage.removeItem('profileDataLoaded');
+      localStorage.removeItem('profileDataSession');
+    };
+  }, [profile?.submitted]);
 
   // Validation patterns
   const patterns = {
@@ -747,6 +789,9 @@ export default function ProfileForm() {
       // Clear profile cache after successful submission
       clearProfileCache();
       
+      // Clear the data loaded flag since profile is now submitted
+      localStorage.removeItem('profileDataLoaded');
+      
       // Show success toast
       toast({
         title: "Profile Submitted Successfully!",
@@ -1277,6 +1322,7 @@ export default function ProfileForm() {
               College Name <span className="text-red-500">*</span>
             </label>
             <CollegeDropdown
+              key="college-dropdown"
               value={formData.collegeName}
               onValueChange={(value) => handleInputChange('collegeName', value)}
               onCollegeSelect={handleCollegeSelect}
@@ -1596,105 +1642,125 @@ export default function ProfileForm() {
     );
   }
 
-  return (
-    <div className="space-y-4 sm:space-y-6">
-      {isSubmitted ? (
-        // Show submitted profile summary ONLY
-        renderSubmittedProfile()
-      ) : (
-        // Show form and navigation ONLY if not submitted
-        <>
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex flex-col sm:flex-row sm:justify-between text-sm text-muted-foreground gap-1 sm:gap-0">
-              <span>Step {currentStep} of 3</span>
-              <span>{Math.round(progress)}% Complete</span>
+  try {
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        {isSubmitted ? (
+          // Show submitted profile summary ONLY
+          renderSubmittedProfile()
+        ) : (
+          // Show form and navigation ONLY if not submitted
+          <>
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between text-sm text-muted-foreground gap-1 sm:gap-0">
+                <span>Step {currentStep} of 3</span>
+                <span>{Math.round(progress)}% Complete</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span className="hidden xs:inline">Personal Details</span>
+                <span className="xs:hidden">Personal</span>
+                <span className="hidden xs:inline">Family Details</span>
+                <span className="xs:hidden">Family</span>
+                <span className="hidden xs:inline">Academic Details</span>
+                <span className="xs:hidden">Academic</span>
+              </div>
             </div>
-            <Progress value={progress} className="h-2" />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span className="hidden xs:inline">Personal Details</span>
-              <span className="xs:hidden">Personal</span>
-              <span className="hidden xs:inline">Family Details</span>
-              <span className="xs:hidden">Family</span>
-              <span className="hidden xs:inline">Academic Details</span>
-              <span className="xs:hidden">Academic</span>
-            </div>
-          </div>
 
-          {/* Top Navigation Buttons */}
-          <div className="flex justify-center mb-6">
-            <div className="flex gap-2 bg-gray-50 p-2 rounded-lg">
-              <Button 
-                size="sm"
-                variant={currentStep === 1 ? "default" : "outline"}
-                onClick={() => setCurrentStep(1)}
-                className="min-w-[100px]"
-              >
-                Personal Details
-              </Button>
-              <Button 
-                size="sm"
-                variant={currentStep === 2 ? "default" : "outline"}
-                onClick={() => setCurrentStep(2)}
-                className="min-w-[100px]"
-              >
-                Family Details
-              </Button>
-              <Button 
-                size="sm"
-                variant={currentStep === 3 ? "default" : "outline"}
-                onClick={() => setCurrentStep(3)}
-                className="min-w-[100px]"
-              >
-                Academic Details
-              </Button>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Render current step */}
-            {currentStep === 1 && renderPersonalDetails()}
-            {currentStep === 2 && renderFamilyDetails()}
-            {currentStep === 3 && renderAcademicDetails()}
-
-            {/* Bottom Action Button */}
-            <div className="flex justify-end mt-6">
-              {currentStep < 3 ? (
+            {/* Top Navigation Buttons */}
+            <div className="flex justify-center mb-6">
+              <div className="flex gap-2 bg-gray-50 p-2 rounded-lg">
                 <Button 
-                  type="button" 
-                  onClick={handleNext}
-                  disabled={isReadOnly || isSaving}
-                  className="w-full sm:w-auto"
+                  size="sm"
+                  variant={currentStep === 1 ? "default" : "outline"}
+                  onClick={() => setCurrentStep(1)}
+                  className="min-w-[100px]"
                 >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    'Save & Next'
-                  )}
+                  Personal Details
                 </Button>
-              ) : (
                 <Button 
-                  type="submit" 
-                  disabled={isSubmitted || isSaving}
-                  className="w-full sm:w-auto"
+                  size="sm"
+                  variant={currentStep === 2 ? "default" : "outline"}
+                  onClick={() => setCurrentStep(2)}
+                  className="min-w-[100px]"
                 >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Submitting...
-                    </>
-                  ) : (
-                    isSubmitted ? 'Profile Already Submitted' : 'Submit Profile'
-                  )}
+                  Family Details
                 </Button>
-              )}
+                <Button 
+                  size="sm"
+                  variant={currentStep === 3 ? "default" : "outline"}
+                  onClick={() => setCurrentStep(3)}
+                  className="min-w-[100px]"
+                >
+                  Academic Details
+                </Button>
+              </div>
             </div>
-          </form>
-        </>
-      )}
-    </div>
-  );
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Render current step */}
+              {currentStep === 1 && renderPersonalDetails()}
+              {currentStep === 2 && renderFamilyDetails()}
+              {currentStep === 3 && renderAcademicDetails()}
+
+              {/* Bottom Action Button */}
+              <div className="flex justify-end mt-6">
+                {currentStep < 3 ? (
+                  <Button 
+                    type="button" 
+                    onClick={handleNext}
+                    disabled={isReadOnly || isSaving}
+                    className="w-full sm:w-auto"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      'Save & Next'
+                    )}
+                  </Button>
+                ) : (
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitted || isSaving}
+                    className="w-full sm:w-auto"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Submitting...
+                      </>
+                    ) : (
+                      isSubmitted ? 'Profile Already Submitted' : 'Submit Profile'
+                    )}
+                  </Button>
+                )}
+              </div>
+            </form>
+          </>
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error('Error rendering ProfileForm:', error);
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        <div className="text-center py-8">
+          <div className="text-red-500 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Something went wrong</h3>
+          <p className="text-muted-foreground mb-4">There was an error loading the profile form.</p>
+          <Button onClick={() => window.location.reload()}>
+            Reload Page
+          </Button>
+        </div>
+      </div>
+    );
+  }
 } 

@@ -25,6 +25,7 @@ export default function StudentLandingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [googleUserData, setGoogleUserData] = useState<GoogleUser | null>(null);
+  const [hasCalledOAuth, setHasCalledOAuth] = useState(false);
 
   // Check for OAuth callback on page load
   useEffect(() => {
@@ -37,6 +38,14 @@ export default function StudentLandingPage() {
           
           // Call the OAuth verification API
           console.log('Calling OAuth verification API from callback...');
+          
+          // Prevent multiple OAuth calls
+          if (hasCalledOAuth) {
+            console.log('OAuth already called from callback, skipping...');
+            return;
+          }
+          
+          setHasCalledOAuth(true);
           const backendResponse = await authenticateWithBackend(
             successResult.accessToken,
             successResult.user
@@ -48,6 +57,7 @@ export default function StudentLandingPage() {
             // Store backend token if provided
             if (backendResponse.token) {
               localStorage.setItem('authToken', backendResponse.token);
+              console.log('OAuth token stored from callback:', backendResponse.token.substring(0, 20) + '...');
             }
             
             // Store Google user data
@@ -224,6 +234,14 @@ export default function StudentLandingPage() {
       
       // Call the OAuth verification API with the Google JWT token
       console.log('Calling OAuth verification API...');
+      
+      // Prevent multiple OAuth calls
+      if (hasCalledOAuth) {
+        console.log('OAuth already called, skipping...');
+        return;
+      }
+      
+      setHasCalledOAuth(true);
       const backendResponse = await authenticateWithBackend(
         response.credential, // Send the full JWT token
         googleUserData
@@ -235,6 +253,7 @@ export default function StudentLandingPage() {
         // Store backend token if provided
         if (backendResponse.token) {
           localStorage.setItem('authToken', backendResponse.token);
+          console.log('OAuth token stored:', backendResponse.token.substring(0, 20) + '...');
         }
         
         // Store Google user data in localStorage for mobile verification page

@@ -86,13 +86,24 @@ const getStudentId = () => {
   return 'default-student-123';
 };
 
+// Helper function to get OAuth token
+const getOAuthToken = () => {
+  return localStorage.getItem('authToken');
+};
+
 // Helper function to make API calls
 const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any) => {
   const url = `${getApiBaseUrl()}${endpoint}`;
+  const oauthToken = getOAuthToken();
+  
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'X-Student-ID': getStudentId()
+    'Content-Type': 'application/json'
   };
+
+  // Add OAuth token to headers if available
+  if (oauthToken) {
+    headers['Authorization'] = `Bearer ${oauthToken}`;
+  }
 
   const config: RequestInit = {
     method,
@@ -115,6 +126,7 @@ const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any)
     return result;
   } catch (error) {
     console.error('API call error:', error);
+    // Return null instead of throwing to prevent crashes
     return null;
   }
 };
