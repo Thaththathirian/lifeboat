@@ -412,7 +412,7 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
 };
 
 // Save student personal details
-export const savePersonalDetails = async (details: PersonalDetails): Promise<boolean> => {
+export const savePersonalDetails = async (details: PersonalDetails): Promise<{ success: boolean; error?: string }> => {
   try {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -425,24 +425,73 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<boo
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
+    // Convert to Form Data format as shown in the image
+    const formData = new FormData();
+    
+    // Add all personal details fields
+    formData.append('firstName', details.firstName);
+    formData.append('lastName', details.lastName);
+    formData.append('gender', details.gender);
+    formData.append('dob', details.dob);
+    formData.append('street', details.street);
+    formData.append('city', details.city);
+    formData.append('state', details.state);
+    formData.append('pinCode', details.pinCode);
+    formData.append('mobile', details.mobile);
+    formData.append('email', details.email);
+    
+    // Prepare headers (don't set Content-Type for FormData - browser will set it with boundary)
+    const headers: Record<string, string> = {};
+    
+    // Add authorization header
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(details),
+      headers,
+      body: formData, // Send as FormData instead of JSON
       signal: controller.signal,
     });
     
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     const data = await response.json();
-    return data.status || false;
+    console.log('Server response:', data);
+    console.log('Response status field:', data.status);
+    console.log('Response status type:', typeof data.status);
+    
+    // Always check the data.status field from the backend response
+    // regardless of HTTP status code
+    // Handle both boolean true and string "true"
+    if (data.status === true || data.status === "true" || data.status === 1 || data.status === "1") {
+      console.log('✅ Save successful - status is true');
+      return { success: true };
+    } else {
+      console.log('❌ Save failed - status is not true:', data.status);
+      console.log('Full error response:', data);
+      
+      // Extract error message from response
+      let errorMessage = 'Failed to save your progress. Please try again.';
+      
+      if (data.message) {
+        console.log('Error message type:', typeof data.message);
+        console.log('Error message content:', data.message);
+        
+        if (typeof data.message === 'string') {
+          errorMessage = data.message;
+        } else if (typeof data.message === 'object') {
+          // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+          const errorMessages = Object.values(data.message);
+          console.log('Extracted error messages:', errorMessages);
+          errorMessage = errorMessages.join(', ');
+        }
+      }
+      
+      console.log('Final error message:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
   } catch (error) {
     console.error('Failed to save personal details:', error);
     throw error;
@@ -490,7 +539,7 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
 };
 
 // Save student family details
-export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean> => {
+export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ success: boolean; error?: string }> => {
   try {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -503,24 +552,70 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
+    // Convert to Form Data format as shown in the image
+    const formData = new FormData();
+    
+    // Add all family details fields
+    formData.append('fatherName', details.fatherName);
+    formData.append('fatherOccupation', details.fatherOccupation);
+    formData.append('motherName', details.motherName);
+    formData.append('motherOccupation', details.motherOccupation);
+    formData.append('parentsPhone', details.parentsPhone);
+    formData.append('familyDetails', details.familyDetails);
+    formData.append('familyAnnualIncome', details.familyAnnualIncome);
+    
+    // Prepare headers (don't set Content-Type for FormData - browser will set it with boundary)
+    const headers: Record<string, string> = {};
+    
+    // Add authorization header
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(details),
+      headers,
+      body: formData, // Send as FormData instead of JSON
       signal: controller.signal,
     });
     
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     const data = await response.json();
-    return data.status || false;
+    console.log('Server response:', data);
+    console.log('Response status field:', data.status);
+    console.log('Response status type:', typeof data.status);
+    
+    // Always check the data.status field from the backend response
+    // regardless of HTTP status code
+    // Handle both boolean true and string "true"
+    if (data.status === true || data.status === "true" || data.status === 1 || data.status === "1") {
+      console.log('✅ Save successful - status is true');
+      return { success: true };
+    } else {
+      console.log('❌ Save failed - status is not true:', data.status);
+      console.log('Full error response:', data);
+      
+      // Extract error message from response
+      let errorMessage = 'Failed to save your progress. Please try again.';
+      
+      if (data.message) {
+        console.log('Error message type:', typeof data.message);
+        console.log('Error message content:', data.message);
+        
+        if (typeof data.message === 'string') {
+          errorMessage = data.message;
+        } else if (typeof data.message === 'object') {
+          // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+          const errorMessages = Object.values(data.message);
+          console.log('Extracted error messages:', errorMessages);
+          errorMessage = errorMessages.join(', ');
+        }
+      }
+      
+      console.log('Final error message:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
   } catch (error) {
     console.error('Failed to save family details:', error);
     throw error;
@@ -568,7 +663,7 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
 };
 
 // Save student academic details
-export const saveAcademicDetails = async (details: AcademicDetails): Promise<boolean> => {
+export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ success: boolean; error?: string }> => {
   try {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -581,24 +676,102 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<boo
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
+    // Convert to Form Data format as shown in the image
+    const formData = new FormData();
+    
+    // Add all academic details fields
+    formData.append('grade', details.grade);
+    formData.append('presentSemester', details.presentSemester);
+    formData.append('academicYear', details.academicYear);
+    formData.append('collegeName', details.collegeName);
+    formData.append('collegePhone', details.collegePhone);
+    formData.append('collegeEmail', details.collegeEmail);
+    formData.append('collegeWebsite', details.collegeWebsite);
+    formData.append('referencePersonName', details.referencePersonName);
+    formData.append('referencePersonQualification', details.referencePersonQualification);
+    formData.append('referencePersonPosition', details.referencePersonPosition);
+    formData.append('totalCollegeFees', details.totalCollegeFees);
+    formData.append('scholarshipAmountRequired', details.scholarshipAmountRequired);
+    formData.append('marks10th', details.marks10th);
+    formData.append('marks12th', details.marks12th);
+    formData.append('marksSem1', details.marksSem1);
+    formData.append('marksSem2', details.marksSem2);
+    formData.append('marksSem3', details.marksSem3);
+    formData.append('marksSem4', details.marksSem4);
+    formData.append('marksSem5', details.marksSem5);
+    formData.append('marksSem6', details.marksSem6);
+    formData.append('marksSem7', details.marksSem7);
+    formData.append('marksSem8', details.marksSem8);
+    formData.append('declaration', details.declaration.toString());
+    formData.append('arrears', details.arrears);
+    formData.append('awareness', details.awareness.toString());
+    
+    // Add bank details if "other" college is selected
+    if (details.collegeBankName) {
+      formData.append('collegeBankName', details.collegeBankName);
+    }
+    if (details.accountNumber) {
+      formData.append('accountNumber', details.accountNumber);
+    }
+    if (details.confirmAccountNumber) {
+      formData.append('confirmAccountNumber', details.confirmAccountNumber);
+    }
+    if (details.ifscCode) {
+      formData.append('ifscCode', details.ifscCode);
+    }
+    
+    // Prepare headers (don't set Content-Type for FormData - browser will set it with boundary)
+    const headers: Record<string, string> = {};
+    
+    // Add authorization header
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(details),
+      headers,
+      body: formData, // Send as FormData instead of JSON
       signal: controller.signal,
     });
     
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     const data = await response.json();
-    return data.status || false;
+    console.log('Server response:', data);
+    console.log('Response status field:', data.status);
+    console.log('Response status type:', typeof data.status);
+    
+    // Always check the data.status field from the backend response
+    // regardless of HTTP status code
+    // Handle both boolean true and string "true"
+    if (data.status === true || data.status === "true" || data.status === 1 || data.status === "1") {
+      console.log('✅ Save successful - status is true');
+      return { success: true };
+    } else {
+      console.log('❌ Save failed - status is not true:', data.status);
+      console.log('Full error response:', data);
+      
+      // Extract error message from response
+      let errorMessage = 'Failed to save your progress. Please try again.';
+      
+      if (data.message) {
+        console.log('Error message type:', typeof data.message);
+        console.log('Error message content:', data.message);
+        
+        if (typeof data.message === 'string') {
+          errorMessage = data.message;
+        } else if (typeof data.message === 'object') {
+          // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+          const errorMessages = Object.values(data.message);
+          console.log('Extracted error messages:', errorMessages);
+          errorMessage = errorMessages.join(', ');
+        }
+      }
+      
+      console.log('Final error message:', errorMessage);
+      return { success: false, error: errorMessage };
+    }
   } catch (error) {
     console.error('Failed to save academic details:', error);
     throw error;
@@ -663,7 +836,18 @@ export const verifyMobileWithToken = async (firebaseToken: string): Promise<bool
     }
 
     const data = await response.json();
-    return data.status || false;
+    console.log('Server response:', data);
+    console.log('Response status field:', data.status);
+    console.log('Response status type:', typeof data.status);
+    
+    // Check if status is explicitly true
+    if (data.status === true) {
+      console.log('✅ Mobile verification successful - status is true');
+      return true;
+    } else {
+      console.log('❌ Mobile verification failed - status is not true:', data.status);
+      return false;
+    }
   } catch (error) {
     console.error('Failed to verify mobile with Firebase token:', error);
     throw error;

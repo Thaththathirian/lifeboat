@@ -109,19 +109,29 @@ const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any)
   };
 
   if (data && method === 'POST') {
-    headers['Content-Type'] = 'application/json';
-    config.body = JSON.stringify(data);
+    // Convert to Form Data format as shown in the image
+    const formData = new FormData();
+    
+    // Add all data fields to FormData
+    Object.keys(data).forEach(key => {
+      const value = data[key];
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString());
+      }
+    });
+    
+    // Don't set Content-Type for FormData - browser will set it with boundary
+    config.body = formData;
   }
 
   try {
     const response = await fetch(url, config);
     
-    if (!response.ok) {
-      console.error(`API call failed: ${response.status} ${response.statusText}`);
-      return null;
-    }
-
+    // Always try to parse the response
     const result = await response.json();
+    
+    // Return the parsed result regardless of HTTP status
+    // The calling function will check the result.status field
     return result;
   } catch (error) {
     console.error('API call error:', error);
@@ -152,19 +162,45 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
 };
 
 // POST Personal Details
-export const savePersonalDetails = async (details: PersonalDetails): Promise<boolean> => {
+export const savePersonalDetails = async (details: PersonalDetails): Promise<{ success: boolean; error?: string }> => {
   console.log('Saving personal details to API');
   const result = await makeApiCall('/Student/personal_details', 'POST', details);
   
-  if (result && result.status === true) {
+  console.log('API result:', result);
+  console.log('Result status:', result?.status);
+  console.log('Result status type:', typeof result?.status);
+  
+  // Handle both boolean true and string "true"
+  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1")) {
     // Update cache
     cache.personalDetails = details;
     cache.lastFetch.personalDetails = Date.now();
-    console.log('Personal details saved and cached');
-    return true;
+    console.log('✅ Personal details saved and cached');
+    return { success: true };
   }
   
-  return false;
+  console.log('❌ Personal details save failed - status is not true');
+  console.log('Full error response:', result);
+  
+  // Extract error message from response
+  let errorMessage = 'Failed to save your progress. Please try again.';
+  
+  if (result?.message) {
+    console.log('Error message type:', typeof result.message);
+    console.log('Error message content:', result.message);
+    
+    if (typeof result.message === 'string') {
+      errorMessage = result.message;
+    } else if (typeof result.message === 'object') {
+      // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+      const errorMessages = Object.values(result.message);
+      console.log('Extracted error messages:', errorMessages);
+      errorMessage = errorMessages.join(', ');
+    }
+  }
+  
+  console.log('Final error message:', errorMessage);
+  return { success: false, error: errorMessage };
 };
 
 // GET Family Details
@@ -189,19 +225,45 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
 };
 
 // POST Family Details
-export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean> => {
+export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ success: boolean; error?: string }> => {
   console.log('Saving family details to API');
   const result = await makeApiCall('/Student/family_details', 'POST', details);
   
-  if (result && result.status === true) {
+  console.log('API result:', result);
+  console.log('Result status:', result?.status);
+  console.log('Result status type:', typeof result?.status);
+  
+  // Handle both boolean true and string "true"
+  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1")) {
     // Update cache
     cache.familyDetails = details;
     cache.lastFetch.familyDetails = Date.now();
-    console.log('Family details saved and cached');
-    return true;
+    console.log('✅ Family details saved and cached');
+    return { success: true };
   }
   
-  return false;
+  console.log('❌ Family details save failed - status is not true');
+  console.log('Full error response:', result);
+  
+  // Extract error message from response
+  let errorMessage = 'Failed to save your progress. Please try again.';
+  
+  if (result?.message) {
+    console.log('Error message type:', typeof result.message);
+    console.log('Error message content:', result.message);
+    
+    if (typeof result.message === 'string') {
+      errorMessage = result.message;
+    } else if (typeof result.message === 'object') {
+      // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+      const errorMessages = Object.values(result.message);
+      console.log('Extracted error messages:', errorMessages);
+      errorMessage = errorMessages.join(', ');
+    }
+  }
+  
+  console.log('Final error message:', errorMessage);
+  return { success: false, error: errorMessage };
 };
 
 // GET Academic Details
@@ -226,19 +288,45 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
 };
 
 // POST Academic Details
-export const saveAcademicDetails = async (details: AcademicDetails): Promise<boolean> => {
+export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ success: boolean; error?: string }> => {
   console.log('Saving academic details to API');
   const result = await makeApiCall('/Student/academic_details', 'POST', details);
   
-  if (result && result.status === true) {
+  console.log('API result:', result);
+  console.log('Result status:', result?.status);
+  console.log('Result status type:', typeof result?.status);
+  
+  // Handle both boolean true and string "true"
+  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1")) {
     // Update cache
     cache.academicDetails = details;
     cache.lastFetch.academicDetails = Date.now();
-    console.log('Academic details saved and cached');
-    return true;
+    console.log('✅ Academic details saved and cached');
+    return { success: true };
   }
   
-  return false;
+  console.log('❌ Academic details save failed - status is not true');
+  console.log('Full error response:', result);
+  
+  // Extract error message from response
+  let errorMessage = 'Failed to save your progress. Please try again.';
+  
+  if (result?.message) {
+    console.log('Error message type:', typeof result.message);
+    console.log('Error message content:', result.message);
+    
+    if (typeof result.message === 'string') {
+      errorMessage = result.message;
+    } else if (typeof result.message === 'object') {
+      // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+      const errorMessages = Object.values(result.message);
+      console.log('Extracted error messages:', errorMessages);
+      errorMessage = errorMessages.join(', ');
+    }
+  }
+  
+  console.log('Final error message:', errorMessage);
+  return { success: false, error: errorMessage };
 };
 
 // Clear cache (useful for logout or after successful submission)

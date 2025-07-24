@@ -31,6 +31,7 @@ export default function ProfileForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasLoadedData, setHasLoadedData] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Prevent duplicate submissions
 
   // Form state
   const [formData, setFormData] = useState({
@@ -577,6 +578,12 @@ export default function ProfileForm() {
 
   const handleNext = async () => {
     if (currentStep < 3) {
+      // Prevent duplicate submissions
+      if (isSubmitting) {
+        console.log('Form submission already in progress, ignoring duplicate click');
+        return;
+      }
+      
       // Trigger validation for all fields in current step
       const currentStepFields = {
         1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email'],
@@ -623,6 +630,7 @@ export default function ProfileForm() {
       }
       
       setIsSaving(true);
+      setIsSubmitting(true);
       try {
         // Check if user is authenticated before attempting to save
         if (!isAuthenticated()) {
@@ -635,7 +643,7 @@ export default function ProfileForm() {
         }
         
         // Save current step data to appropriate API endpoint
-        let saveSuccess = false;
+        let saveResult;
         
         if (currentStep === 1) {
           // Save personal details
@@ -651,7 +659,7 @@ export default function ProfileForm() {
             mobile: formData.mobile,
             email: formData.email,
           };
-          saveSuccess = await savePersonalDetails(personalDetails);
+          saveResult = await savePersonalDetails(personalDetails);
         } else if (currentStep === 2) {
           // Save family details
           const familyDetails = {
@@ -663,10 +671,10 @@ export default function ProfileForm() {
             familyDetails: formData.familyDetails,
             familyAnnualIncome: formData.familyAnnualIncome,
           };
-          saveSuccess = await saveFamilyDetails(familyDetails);
+          saveResult = await saveFamilyDetails(familyDetails);
         }
         
-        if (saveSuccess) {
+        if (saveResult?.success) {
           // Show success message
           toast({
             title: "Progress Saved!",
@@ -677,7 +685,13 @@ export default function ProfileForm() {
           // Move to next step
           setCurrentStep(currentStep + 1);
         } else {
-          throw new Error('Failed to save data');
+          // Show error message from backend
+          const errorMessage = saveResult?.error || 'Failed to save data';
+          toast({
+            title: "Save Failed",
+            description: errorMessage,
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error('Error saving data:', error);
@@ -688,6 +702,7 @@ export default function ProfileForm() {
         });
       } finally {
         setIsSaving(false);
+        setIsSubmitting(false);
       }
     }
   };
@@ -700,6 +715,12 @@ export default function ProfileForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent duplicate submissions
+    if (isSubmitting) {
+      console.log('Form submission already in progress, ignoring duplicate submit');
+      return;
+    }
     
     // Trigger validation for all required fields
     const allRequiredFields = [
@@ -739,6 +760,7 @@ export default function ProfileForm() {
     }
     
     setIsSaving(true);
+    setIsSubmitting(true);
     try {
       // Check if user is authenticated
       if (!isAuthenticated()) {
@@ -781,10 +803,17 @@ export default function ProfileForm() {
         awareness: formData.awareness,
       };
 
-      const academicSaveSuccess = await saveAcademicDetails(academicDetails);
+      const academicSaveResult = await saveAcademicDetails(academicDetails);
 
-      if (!academicSaveSuccess) {
-        throw new Error('Failed to save academic details');
+      if (!academicSaveResult?.success) {
+        // Show error message from backend
+        const errorMessage = academicSaveResult?.error || 'Failed to save academic details';
+        toast({
+          title: "Submission Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
       }
 
       // Update profile with submitted data
@@ -819,10 +848,11 @@ export default function ProfileForm() {
         description: "Failed to submit your profile. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+          } finally {
+        setIsSaving(false);
+        setIsSubmitting(false);
+      }
+    };
 
   // Check if profile is submitted but not yet approved
   const isSubmitted = profile?.submitted;
@@ -1725,7 +1755,7 @@ export default function ProfileForm() {
                   <Button 
                     type="button" 
                     onClick={handleNext}
-                    disabled={isReadOnly || isSaving}
+                    disabled={isReadOnly || isSaving || isSubmitting}
                     className="w-full sm:w-auto"
                   >
                     {isSaving ? (
@@ -1740,7 +1770,7 @@ export default function ProfileForm() {
                 ) : (
                   <Button 
                     type="submit" 
-                    disabled={isSubmitted || isSaving}
+                    disabled={isSubmitted || isSaving || isSubmitting}
                     className="w-full sm:w-auto"
                   >
                     {isSaving ? (
