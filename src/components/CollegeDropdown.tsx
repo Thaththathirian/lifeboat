@@ -39,7 +39,7 @@ export default function CollegeDropdown({
   const fetchColleges = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost/lifeboat/Admin/get_all_colleges');
+      const response = await fetch('http://localhost/lifeboat/Admin/get_all_colleges?status=1');
       const data = await response.json();
       
       if (data.status && data.data) {

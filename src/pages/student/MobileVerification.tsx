@@ -131,6 +131,14 @@ export default function MobileVerification() {
           ...googleUserData
         });
         
+        // Store mobile number in localStorage for backend access
+        const userProfile = {
+          ...profile,
+          mobile: mobileNumber,
+          ...googleUserData
+        };
+        localStorage.setItem('userProfile', JSON.stringify(userProfile));
+        
         toast({
           title: "OTP Sent Successfully",
           description: "Please check your mobile for the verification code.",
@@ -260,12 +268,25 @@ export default function MobileVerification() {
           });
           setStatus('Profile Pending');
           
+          // Store complete user profile in localStorage for backend access
+          const userProfile = {
+            ...profile,
+            mobile: mobileNumber,
+            firebaseUid: result.user.uid,
+            ...googleUserData
+          };
+          localStorage.setItem('userProfile', JSON.stringify(userProfile));
+          
           // Set current user for protected routes
-          setCurrentUser({
+          const currentUser = {
             ...googleUserData,
             mobile: mobileNumber,
             firebaseUid: result.user.uid,
-          });
+          };
+          setCurrentUser(currentUser);
+          
+          // Also store in localStorage for backend access
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
           
           toast({
             title: "Verification Successful",

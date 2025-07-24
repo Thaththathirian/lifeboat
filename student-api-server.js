@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 80; // Use port 80 for localhost/lifeboat
+const PORT = process.env.PORT || 3002; // Use port 3002 to avoid conflicts
 
 // Middleware
 app.use(cors({
@@ -21,6 +21,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // In-memory storage for student data (in production, this would be a database)
 const studentData = new Map();
@@ -79,11 +80,14 @@ app.post('/Student/personal_details', (req, res) => {
     const studentId = getStudentId(req);
     const data = req.body;
     
+    console.log('Received personal details data:', data);
+    
     // Validate required fields
     const requiredFields = ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email'];
     const validation = validateRequiredFields(data, requiredFields);
     
     if (!validation.valid) {
+      console.log('Validation failed:', validation.error);
       return res.status(400).json({
         status: false,
         message: validation.error,
@@ -93,6 +97,8 @@ app.post('/Student/personal_details', (req, res) => {
     
     // Store the data
     studentData.set(`${studentId}_personal`, data);
+    
+    console.log('Personal details saved successfully for student:', studentId);
     
     res.json({
       status: true,
@@ -144,11 +150,14 @@ app.post('/Student/family_details', (req, res) => {
     const studentId = getStudentId(req);
     const data = req.body;
     
+    console.log('Received family details data:', data);
+    
     // Validate required fields
     const requiredFields = ['fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome'];
     const validation = validateRequiredFields(data, requiredFields);
     
     if (!validation.valid) {
+      console.log('Validation failed:', validation.error);
       return res.status(400).json({
         status: false,
         message: validation.error,
@@ -158,6 +167,8 @@ app.post('/Student/family_details', (req, res) => {
     
     // Store the data
     studentData.set(`${studentId}_family`, data);
+    
+    console.log('Family details saved successfully for student:', studentId);
     
     res.json({
       status: true,
@@ -209,11 +220,14 @@ app.post('/Student/academic_details', (req, res) => {
     const studentId = getStudentId(req);
     const data = req.body;
     
+    console.log('Received academic details data:', data);
+    
     // Validate required fields
     const requiredFields = ['grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired'];
     const validation = validateRequiredFields(data, requiredFields);
     
     if (!validation.valid) {
+      console.log('Validation failed:', validation.error);
       return res.status(400).json({
         status: false,
         message: validation.error,
@@ -224,6 +238,8 @@ app.post('/Student/academic_details', (req, res) => {
     // Store the data
     studentData.set(`${studentId}_academic`, data);
     
+    console.log('Academic details saved successfully for student:', studentId);
+    
     res.json({
       status: true,
       message: 'Academic details saved successfully',
@@ -231,6 +247,46 @@ app.post('/Student/academic_details', (req, res) => {
     });
   } catch (error) {
     console.error('Error saving academic details:', error);
+    res.status(500).json({
+      status: false,
+      message: 'Internal server error',
+      data: null
+    });
+  }
+});
+
+// POST Mobile Verification
+app.post('/Student/verify_mobile', (req, res) => {
+  try {
+    const studentId = getStudentId(req);
+    const data = req.body;
+    
+    console.log('Received mobile verification data:', data);
+    
+    // Validate required fields
+    if (!data.firebaseToken) {
+      console.log('Validation failed: Missing firebaseToken');
+      return res.status(400).json({
+        status: false,
+        message: 'Missing firebaseToken',
+        data: null
+      });
+    }
+    
+    // For now, just simulate successful verification
+    // In production, this would verify the Firebase token
+    console.log('Mobile verification successful for student:', studentId);
+    
+    res.json({
+      status: true,
+      message: 'Mobile verification successful',
+      data: {
+        verified: true,
+        studentId: studentId
+      }
+    });
+  } catch (error) {
+    console.error('Error verifying mobile:', error);
     res.status(500).json({
       status: false,
       message: 'Internal server error',
@@ -257,6 +313,9 @@ app.get('/health', (req, res) => {
       academic: {
         get: 'GET /lifeboat/Student/get_academic_details',
         post: 'POST /lifeboat/Student/academic_details'
+      },
+      mobile: {
+        post: 'POST /lifeboat/Student/verify_mobile'
       }
     }
   });
@@ -275,8 +334,10 @@ app.listen(PORT, () => {
   console.log('   POST /Student/family_details');
   console.log('   GET  /Student/get_academic_details');
   console.log('   POST /Student/academic_details');
+  console.log('   POST /Student/verify_mobile');
   console.log('');
   console.log('💡 To test with curl:');
   console.log('   curl -X GET http://localhost/lifeboat/Student/get_personal_details');
   console.log('   curl -X POST http://localhost/lifeboat/Student/personal_details -H "Content-Type: application/json" -d \'{"firstName":"John","lastName":"Doe"}\'');
+  console.log('   curl -X POST http://localhost/lifeboat/Student/verify_mobile -H "Content-Type: application/json" -d \'{"firebaseToken":"test-token"}\'');
 }); 

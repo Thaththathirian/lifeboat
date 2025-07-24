@@ -109,16 +109,8 @@ const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any)
   };
 
   if (data && method === 'POST') {
-    // Convert data to FormData format instead of JSON
-    const formData = new FormData();
-    Object.keys(data).forEach(key => {
-      const value = data[key];
-      // Convert boolean values to strings for FormData
-      formData.append(key, typeof value === 'boolean' ? value.toString() : value);
-    });
-    
-    // Don't set Content-Type header - let browser set it with boundary for FormData
-    config.body = formData;
+    headers['Content-Type'] = 'application/json';
+    config.body = JSON.stringify(data);
   }
 
   try {

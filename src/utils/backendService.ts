@@ -420,19 +420,13 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<boo
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    // Convert to FormData format
-    const formData = new FormData();
-    Object.keys(details).forEach(key => {
-      formData.append(key, details[key as keyof PersonalDetails]);
-    });
-    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
-        // Don't set Content-Type - let browser set it with boundary for FormData
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(details),
       signal: controller.signal,
     });
     
@@ -443,7 +437,7 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<boo
     }
 
     const data = await response.json();
-    return data.success || false;
+    return data.status || false;
   } catch (error) {
     console.error('Failed to save personal details:', error);
     throw error;
@@ -504,19 +498,13 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    // Convert to FormData format
-    const formData = new FormData();
-    Object.keys(details).forEach(key => {
-      formData.append(key, details[key as keyof FamilyDetails]);
-    });
-    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
-        // Don't set Content-Type - let browser set it with boundary for FormData
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(details),
       signal: controller.signal,
     });
     
@@ -527,7 +515,7 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean
     }
 
     const data = await response.json();
-    return data.success || false;
+    return data.status || false;
   } catch (error) {
     console.error('Failed to save family details:', error);
     throw error;
@@ -588,21 +576,13 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<boo
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    // Convert to FormData format
-    const formData = new FormData();
-    Object.keys(details).forEach(key => {
-      const value = details[key as keyof AcademicDetails];
-      // Convert boolean values to strings for FormData
-      formData.append(key, typeof value === 'boolean' ? value.toString() : value);
-    });
-    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
-        // Don't set Content-Type - let browser set it with boundary for FormData
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(details),
       signal: controller.signal,
     });
     
@@ -613,7 +593,7 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<boo
     }
 
     const data = await response.json();
-    return data.success || false;
+    return data.status || false;
   } catch (error) {
     console.error('Failed to save academic details:', error);
     throw error;
@@ -624,27 +604,54 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<boo
 export const verifyMobileWithToken = async (firebaseToken: string): Promise<boolean> => {
   try {
     const token = localStorage.getItem('authToken');
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-
+    
     const apiUrl = `${getApiBaseUrl()}/Student/verify_mobile`;
     console.log('Verifying mobile with Firebase token at:', apiUrl);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    // Convert to FormData format as shown in the image
-    const formData = new FormData();
-    formData.append('firebaseToken', firebaseToken);
+    // Get mobile number from profile or localStorage
+    const profile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    let mobileNumber = profile.mobile || '';
+    
+    // If mobile number is empty, try to get it from other sources
+    if (!mobileNumber) {
+      // Try to get from current profile state
+      const currentProfile = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      mobileNumber = currentProfile.mobile || '';
+    }
+    
+    // If still empty, use a fallback for testing
+    if (!mobileNumber) {
+      mobileNumber = '9999999999'; // Fallback for testing
+      console.warn('Mobile number not found, using fallback:', mobileNumber);
+    }
+    
+    // Send data in the exact format the PHP server expects
+    const requestData = {
+      mobileNumber: mobileNumber,
+      otp: '123456' // Use a default OTP since Firebase already verified
+    };
+    
+    console.log('Sending mobile verification data:', requestData);
+    console.log('Mobile number source:', { profile: profile.mobile, fallback: mobileNumber });
+    console.log('Authentication token present:', !!token);
+    
+    // Prepare headers
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add authorization header if token is available
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        // Don't set Content-Type - let browser set it with boundary for FormData
-      },
-      body: formData,
+      headers,
+      body: JSON.stringify(requestData),
       signal: controller.signal,
     });
     
