@@ -47,44 +47,49 @@ export default function GoogleLoginPage() {
       console.log('Processing OAuth callback...');
       const oauthResult = await handleOAuthCallback();
       
-      if (oauthResult.success && oauthResult.user) {
-              console.log('OAuth successful, user data:', oauthResult.user);
-      
-      // Debug token transmission
-      await debugOAuthFlow.testTokenTransmission(oauthResult.accessToken!, oauthResult.user);
-      
-      // Send access token to backend
-      const backendResponse = await authenticateWithBackend(
-        oauthResult.accessToken!, 
-        oauthResult.user
-      );
+      if (oauthResult.success) {
+        // Type guard to ensure we have the success case
+        if ('user' in oauthResult && 'accessToken' in oauthResult) {
+          console.log('OAuth successful, user data:', oauthResult.user);
         
-        if (backendResponse.success) {
-          // Store backend token
-          if (backendResponse.token) {
-            localStorage.setItem('authToken', backendResponse.token);
+          // Debug token transmission
+          await debugOAuthFlow.testTokenTransmission(oauthResult.accessToken, oauthResult.user);
+          
+          // Send access token to backend
+          const backendResponse = await authenticateWithBackend(
+            oauthResult.accessToken, 
+            oauthResult.user
+          );
+            
+          if (backendResponse.success) {
+            // Store backend token
+            if (backendResponse.token) {
+              localStorage.setItem('authToken', backendResponse.token);
+            }
+            
+            // Set user profile and navigate
+            setProfile({
+              ...oauthResult.user,
+              ...backendResponse.user
+            });
+            setStatus('Profile Pending');
+            
+            toast({
+              title: "Login Successful",
+              description: `Welcome, ${oauthResult.user.name}! Redirecting to dashboard...`,
+            });
+            
+            // Clear URL hash and navigate
+            window.location.hash = '';
+            navigate('/student');
+          } else {
+            throw new Error(backendResponse.error || 'Backend authentication failed');
           }
-          
-          // Set user profile and navigate
-          setProfile({
-            ...oauthResult.user,
-            ...backendResponse.user
-          });
-          setStatus('Profile Pending');
-          
-          toast({
-            title: "Login Successful",
-            description: `Welcome, ${oauthResult.user.name}! Redirecting to dashboard...`,
-          });
-          
-          // Clear URL hash and navigate
-          window.location.hash = '';
-          navigate('/student');
         } else {
-          throw new Error(backendResponse.error || 'Backend authentication failed');
+          throw new Error('Invalid OAuth result structure');
         }
       } else {
-        throw new Error(oauthResult.error || 'OAuth callback failed');
+        throw new Error('error' in oauthResult ? oauthResult.error : 'OAuth callback failed');
       }
     } catch (error) {
       console.error('OAuth callback processing failed:', error);
