@@ -71,7 +71,7 @@ export default function OTPVerification({ onSuccess, onBack, googleUserData }: O
         });
         
         // Store reCAPTCHA token for backend verification
-        if (result.recaptchaToken) {
+        if ('recaptchaToken' in result && typeof result.recaptchaToken === 'string') {
           localStorage.setItem('recaptchaToken', result.recaptchaToken);
         }
       } else {
