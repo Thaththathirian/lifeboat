@@ -1,7 +1,7 @@
 // Test script for college API
 async function testCollegeAPI() {
   try {
-    const response = await fetch('https://localhost/lifeboat/Admin/get_verified_colleges');
+    const response = await fetch('https://localhost/lifeboat/Admin/get_all_colleges');
     const data = await response.json();
     console.log('API Response:', data);
     
