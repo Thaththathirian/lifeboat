@@ -171,7 +171,7 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<{ s
   console.log('Result status type:', typeof result?.status);
   
   // Handle both boolean true and string "true"
-  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1")) {
+  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1" || result.status === "success")) {
     // Update cache
     cache.personalDetails = details;
     cache.lastFetch.personalDetails = Date.now();
@@ -236,7 +236,7 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
   console.log('Result status type:', typeof result?.status);
   
   // Handle both boolean true and string "true"
-  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1")) {
+  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1" || result.status === "success")) {
     // Update cache
     cache.familyDetails = details;
     cache.lastFetch.familyDetails = Date.now();
@@ -301,7 +301,7 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
   console.log('Result status type:', typeof result?.status);
   
   // Handle both boolean true and string "true"
-  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1")) {
+  if (result && (result.status === true || result.status === "true" || result.status === 1 || result.status === "1" || result.status === "success")) {
     // Update cache
     cache.academicDetails = details;
     cache.lastFetch.academicDetails = Date.now();
