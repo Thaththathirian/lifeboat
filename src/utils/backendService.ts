@@ -364,6 +364,11 @@ interface AcademicDetails {
   declaration: boolean;
   arrears: string;
   awareness: boolean;
+  // Optional bank details for "other" college
+  collegeBankName?: string;
+  accountNumber?: string;
+  confirmAccountNumber?: string;
+  ifscCode?: string;
 }
 
 // Get student personal details
@@ -628,20 +633,16 @@ export const verifyMobileWithToken = async (firebaseToken: string): Promise<bool
       console.warn('Mobile number not found, using fallback:', mobileNumber);
     }
     
-    // Send data in the exact format the PHP server expects
-    const requestData = {
-      mobileNumber: mobileNumber,
-      otp: '123456' // Use a default OTP since Firebase already verified
-    };
+    // Send data in Form Data format as shown in the image
+    const formData = new FormData();
+    formData.append('firebaseToken', firebaseToken);
     
-    console.log('Sending mobile verification data:', requestData);
-    console.log('Mobile number source:', { profile: profile.mobile, fallback: mobileNumber });
+    console.log('Sending mobile verification data as Form Data');
+    console.log('Firebase token present:', !!firebaseToken);
     console.log('Authentication token present:', !!token);
     
-    // Prepare headers
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    // Prepare headers (don't set Content-Type for FormData - browser will set it with boundary)
+    const headers: Record<string, string> = {};
     
     // Add authorization header if token is available
     if (token) {
@@ -651,7 +652,7 @@ export const verifyMobileWithToken = async (firebaseToken: string): Promise<bool
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers,
-      body: JSON.stringify(requestData),
+      body: formData, // Send as FormData instead of JSON
       signal: controller.signal,
     });
     

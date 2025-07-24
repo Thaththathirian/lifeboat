@@ -13,6 +13,13 @@ interface CollegeDropdownProps {
   value: string;
   onValueChange: (value: string) => void;
   onCollegeSelect?: (college: College | null) => void;
+  onOtherCollegeDataChange?: (data: {
+    collegeName: string;
+    collegeBankName: string;
+    accountNumber: string;
+    confirmAccountNumber: string;
+    ifscCode: string;
+  }) => void;
   disabled?: boolean;
   className?: string;
 }
@@ -21,6 +28,7 @@ export default function CollegeDropdown({
   value,
   onValueChange,
   onCollegeSelect,
+  onOtherCollegeDataChange,
   disabled = false,
   className = ""
 }: CollegeDropdownProps) {
@@ -75,10 +83,16 @@ export default function CollegeDropdown({
   };
 
   const handleOtherFieldChange = (field: string, value: string) => {
-    setOtherCollegeData(prev => ({
-      ...prev,
+    const updatedData = {
+      ...otherCollegeData,
       [field]: value
-    }));
+    };
+    setOtherCollegeData(updatedData);
+    
+    // Notify parent component of the updated bank details
+    if (onOtherCollegeDataChange) {
+      onOtherCollegeDataChange(updatedData);
+    }
   };
 
   try {

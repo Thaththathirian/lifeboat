@@ -87,6 +87,13 @@ export default function ProfileForm() {
 
   const [otherCollege, setOtherCollege] = useState("");
   const [selectedCollege, setSelectedCollege] = useState<any>(null);
+  const [otherCollegeData, setOtherCollegeData] = useState({
+    collegeName: "",
+    collegeBankName: "",
+    accountNumber: "",
+    confirmAccountNumber: "",
+    ifscCode: ""
+  });
 
   // Helper function to get input styling based on errors
   const getInputStyling = (fieldName: string) => {
@@ -482,6 +489,13 @@ export default function ProfileForm() {
           declaration: updatedFormData.declaration,
           arrears: updatedFormData.arrears,
           awareness: updatedFormData.awareness,
+          // Include bank details if "other" college is selected
+          ...(updatedFormData.collegeName === "other" && {
+            collegeBankName: otherCollegeData.collegeBankName,
+            accountNumber: otherCollegeData.accountNumber,
+            confirmAccountNumber: otherCollegeData.confirmAccountNumber,
+            ifscCode: otherCollegeData.ifscCode
+          })
         };
         await saveAcademicDetails(academicDetails);
       }
@@ -1326,6 +1340,7 @@ export default function ProfileForm() {
               value={formData.collegeName}
               onValueChange={(value) => handleInputChange('collegeName', value)}
               onCollegeSelect={handleCollegeSelect}
+              onOtherCollegeDataChange={setOtherCollegeData}
               disabled={isReadOnly}
               className={getInputStyling('collegeName').className}
             />
