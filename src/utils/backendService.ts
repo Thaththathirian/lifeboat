@@ -655,7 +655,7 @@ export const verifyMobileWithToken = async (firebaseToken: string): Promise<bool
     }
 
     const data = await response.json();
-    return data.success || false;
+    return data.status || false;
   } catch (error) {
     console.error('Failed to verify mobile with Firebase token:', error);
     throw error;
