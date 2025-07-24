@@ -674,7 +674,12 @@ export default function ProfileForm() {
           saveResult = await saveFamilyDetails(familyDetails);
         }
         
+        console.log('🔍 ProfileForm received saveResult:', saveResult);
+        console.log('🔍 saveResult?.success:', saveResult?.success);
+        console.log('🔍 saveResult?.error:', saveResult?.error);
+        
         if (saveResult?.success) {
+          console.log('✅ ProfileForm: Save successful, showing success toast');
           // Show success message
           toast({
             title: "Progress Saved!",
@@ -685,6 +690,8 @@ export default function ProfileForm() {
           // Move to next step
           setCurrentStep(currentStep + 1);
         } else {
+          console.log('❌ ProfileForm: Save failed, showing error toast');
+          console.log('❌ Error message:', saveResult?.error || 'Failed to save data');
           // Show error message from backend
           const errorMessage = saveResult?.error || 'Failed to save data';
           toast({

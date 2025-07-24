@@ -125,16 +125,29 @@ const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any)
   }
 
   try {
+    console.log('🌐 Making API call to:', url);
+    console.log('📤 Request method:', method);
+    console.log('📤 Request headers:', headers);
+    console.log('📤 Request data:', data);
+    
     const response = await fetch(url, config);
+    
+    console.log('📥 Response status:', response.status);
+    console.log('📥 Response ok:', response.ok);
+    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
     
     // Always try to parse the response
     const result = await response.json();
+    
+    console.log('📥 Parsed response:', result);
+    console.log('📥 Response status field:', result?.status);
+    console.log('📥 Response status type:', typeof result?.status);
     
     // Return the parsed result regardless of HTTP status
     // The calling function will check the result.status field
     return result;
   } catch (error) {
-    console.error('API call error:', error);
+    console.error('❌ API call error:', error);
     // Return null instead of throwing to prevent crashes
     return null;
   }
