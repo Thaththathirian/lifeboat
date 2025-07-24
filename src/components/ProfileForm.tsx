@@ -806,8 +806,14 @@ export default function ProfileForm() {
       const academicSaveResult = await saveAcademicDetails(academicDetails);
 
       if (!academicSaveResult?.success) {
-        // Show error message from backend
+        // Show specific field errors if available
         const errorMessage = academicSaveResult?.error || 'Failed to save academic details';
+        
+        // If error contains field-specific errors, set them in the errors state
+        if (academicSaveResult?.fieldErrors) {
+          setErrors(academicSaveResult.fieldErrors);
+        }
+        
         toast({
           title: "Submission Failed",
           description: errorMessage,
@@ -826,8 +832,8 @@ export default function ProfileForm() {
       
       setProfile(submittedProfile);
       
-      // Update status to Profile Under Verification
-      setStatus('Profile Under Verification');
+      // Update status to profile pending verification
+      setStatus('profile pending verification');
       
       // Clear profile cache after successful submission
       clearProfileCache();

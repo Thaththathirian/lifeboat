@@ -135,9 +135,9 @@ export default function StudentDashboard() {
       );
     }
 
-    // Profile Under Verification status
-    if (status === ('Profile Under Verification' as any)) {
-      console.log('Status is Profile Under Verification, showing verification pending card');
+    // Profile pending verification status
+    if (status === 'profile pending verification') {
+      console.log('Status is profile pending verification, showing verification pending card');
       return (
         <Card className="mb-6 border-l-4 border-l-yellow-500">
           <CardHeader className="text-center">
@@ -154,7 +154,7 @@ export default function StudentDashboard() {
 
 
     // Schedule Interview status
-    if (status === 'Schedule Interview') {
+    if (status === 'Schedule Interview' || status === 'interview') {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
@@ -171,6 +171,7 @@ export default function StudentDashboard() {
                   <div><span className="font-medium">Location:</span> Main Campus, Room 205</div>
                   <div><span className="font-medium">Interviewer:</span> Dr. Sarah Johnson</div>
                   <div><span className="font-medium">Duration:</span> 30 minutes</div>
+                  <div><span className="font-medium">Notes:</span> Please bring all required documents and arrive 15 minutes early</div>
                 </div>
               </div>
               
@@ -206,33 +207,43 @@ export default function StudentDashboard() {
       );
     }
 
-    // Scholarship documents pending
-    if (status === 'documents') {
+    // Documents pending status
+    if (status === 'documents' || status === 'Documents pending') {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Scholarship Documents Pending</CardTitle>
-            <p className="text-muted-foreground mt-2">Please upload your scholarship documents and academic documents to proceed with your application.</p>
+            <CardTitle className="text-2xl">Documents Upload Required</CardTitle>
+            <p className="text-muted-foreground mt-2">Please upload your personal documents and academic documents to proceed with your application.</p>
           </CardHeader>
-          <CardContent className="flex justify-center gap-4">
-            <Button onClick={() => navigate('/student/documents')}>
-              Upload Personal Documents
-            </Button>
-            <Button variant="outline" onClick={() => navigate('/student/academic-documents')}>
-              Upload Academic Documents
-            </Button>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-4">
+                <h3 className="font-semibold text-lg mb-2">Personal Documents</h3>
+                <p className="text-sm text-muted-foreground mb-4">Upload your personal and financial documents</p>
+                <Button onClick={() => navigate('/student/documents')} className="w-full">
+                  Upload Personal Documents
+                </Button>
+              </Card>
+              <Card className="p-4">
+                <h3 className="font-semibold text-lg mb-2">Academic Documents</h3>
+                <p className="text-sm text-muted-foreground mb-4">Upload your educational certificates and marksheets</p>
+                <Button onClick={() => navigate('/student/academic-documents')} variant="outline" className="w-full">
+                  Upload Academic Documents
+                </Button>
+              </Card>
+            </div>
           </CardContent>
         </Card>
       );
     }
 
-    // Documents submitted
-    if (status === 'documents_submitted') {
+    // Documents verification pending
+    if (status === 'documents_submitted' || status === 'documents verification pending') {
       return (
-        <Card className="mb-6 border-l-4 border-l-gray-500">
+        <Card className="mb-6 border-l-4 border-l-yellow-500">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Documents Under Review</CardTitle>
-            <p className="text-muted-foreground mt-2">Your documents have been submitted and are currently under review. You can view your submitted documents anytime.</p>
+            <p className="text-muted-foreground mt-2">Your documents have been submitted and are currently under verification. You can view your submitted documents anytime.</p>
           </CardHeader>
           <CardContent className="flex justify-center gap-4">
             <Button variant="outline" onClick={() => navigate('/student/documents')}>
@@ -377,15 +388,15 @@ export default function StudentDashboard() {
         </div>
 
         {/* Profile Summary Card - Show when profile is submitted and verified */}
-        {(status === 'Profile Under Verification' || status === 'Schedule Interview' || status === 'documents' || status === 'documents_submitted' || status === 'eligible_scholarship' || status === 'payment' || status === 'paid' || status === 'academic_documents_pending' || status === 'academic_documents_submitted' || status === 'academic_results_pending' || status === 'academic_verification_pending' || status === 'apply_next' || status === 'alumni' || status === 'Future Ready Module') && profile?.submitted && (
+        {(status === 'profile pending verification' || status === 'Schedule Interview' || status === 'interview' || status === 'documents' || status === 'Documents pending' || status === 'documents_submitted' || status === 'documents verification pending' || status === 'eligible_scholarship' || status === 'payment' || status === 'paid' || status === 'academic_documents_pending' || status === 'academic_documents_submitted' || status === 'academic_results_pending' || status === 'academic_verification_pending' || status === 'apply_next' || status === 'alumni' || status === 'Future Ready Module') && profile?.submitted && (
           <div className="mb-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl">
-                  {status === 'Profile Under Verification' ? 'Submitted Profile Summary (Pending Verification)' : 'Profile Summary'}
+                  {status === 'profile pending verification' ? 'Submitted Profile Summary (Pending Verification)' : 'Profile Summary'}
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  {status === 'Profile Under Verification' 
+                  {status === 'profile pending verification' 
                     ? 'Your submitted profile details (read-only) - Awaiting admin verification'
                     : 'Your verified profile details (read-only)'
                   }

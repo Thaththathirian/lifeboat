@@ -162,7 +162,7 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
 };
 
 // POST Personal Details
-export const savePersonalDetails = async (details: PersonalDetails): Promise<{ success: boolean; error?: string }> => {
+export const savePersonalDetails = async (details: PersonalDetails): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string> }> => {
   console.log('Saving personal details to API');
   const result = await makeApiCall('/Student/personal_details', 'POST', details);
   
@@ -184,6 +184,7 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<{ s
   
   // Extract error message from response
   let errorMessage = 'Failed to save your progress. Please try again.';
+  let fieldErrors: Record<string, string> = {};
   
   if (result?.message) {
     console.log('Error message type:', typeof result.message);
@@ -193,6 +194,7 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<{ s
       errorMessage = result.message;
     } else if (typeof result.message === 'object') {
       // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+      fieldErrors = result.message;
       const errorMessages = Object.values(result.message);
       console.log('Extracted error messages:', errorMessages);
       errorMessage = errorMessages.join(', ');
@@ -200,7 +202,7 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<{ s
   }
   
   console.log('Final error message:', errorMessage);
-  return { success: false, error: errorMessage };
+  return { success: false, error: errorMessage, fieldErrors };
 };
 
 // GET Family Details
@@ -225,7 +227,7 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
 };
 
 // POST Family Details
-export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ success: boolean; error?: string }> => {
+export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string> }> => {
   console.log('Saving family details to API');
   const result = await makeApiCall('/Student/family_details', 'POST', details);
   
@@ -247,6 +249,7 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
   
   // Extract error message from response
   let errorMessage = 'Failed to save your progress. Please try again.';
+  let fieldErrors: Record<string, string> = {};
   
   if (result?.message) {
     console.log('Error message type:', typeof result.message);
@@ -256,6 +259,7 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
       errorMessage = result.message;
     } else if (typeof result.message === 'object') {
       // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+      fieldErrors = result.message;
       const errorMessages = Object.values(result.message);
       console.log('Extracted error messages:', errorMessages);
       errorMessage = errorMessages.join(', ');
@@ -263,7 +267,7 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
   }
   
   console.log('Final error message:', errorMessage);
-  return { success: false, error: errorMessage };
+  return { success: false, error: errorMessage, fieldErrors };
 };
 
 // GET Academic Details
@@ -288,7 +292,7 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
 };
 
 // POST Academic Details
-export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ success: boolean; error?: string }> => {
+export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string> }> => {
   console.log('Saving academic details to API');
   const result = await makeApiCall('/Student/academic_details', 'POST', details);
   
@@ -310,6 +314,7 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
   
   // Extract error message from response
   let errorMessage = 'Failed to save your progress. Please try again.';
+  let fieldErrors: Record<string, string> = {};
   
   if (result?.message) {
     console.log('Error message type:', typeof result.message);
@@ -319,6 +324,7 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
       errorMessage = result.message;
     } else if (typeof result.message === 'object') {
       // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+      fieldErrors = result.message;
       const errorMessages = Object.values(result.message);
       console.log('Extracted error messages:', errorMessages);
       errorMessage = errorMessages.join(', ');
@@ -326,7 +332,7 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
   }
   
   console.log('Final error message:', errorMessage);
-  return { success: false, error: errorMessage };
+  return { success: false, error: errorMessage, fieldErrors };
 };
 
 // Clear cache (useful for logout or after successful submission)
