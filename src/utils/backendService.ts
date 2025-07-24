@@ -420,13 +420,19 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<boo
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
+    // Convert to FormData format
+    const formData = new FormData();
+    Object.keys(details).forEach(key => {
+      formData.append(key, details[key as keyof PersonalDetails]);
+    });
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        // Don't set Content-Type - let browser set it with boundary for FormData
       },
-      body: JSON.stringify(details),
+      body: formData,
       signal: controller.signal,
     });
     
@@ -498,13 +504,19 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<boolean
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
+    // Convert to FormData format
+    const formData = new FormData();
+    Object.keys(details).forEach(key => {
+      formData.append(key, details[key as keyof FamilyDetails]);
+    });
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        // Don't set Content-Type - let browser set it with boundary for FormData
       },
-      body: JSON.stringify(details),
+      body: formData,
       signal: controller.signal,
     });
     
@@ -576,13 +588,21 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<boo
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
+    // Convert to FormData format
+    const formData = new FormData();
+    Object.keys(details).forEach(key => {
+      const value = details[key as keyof AcademicDetails];
+      // Convert boolean values to strings for FormData
+      formData.append(key, typeof value === 'boolean' ? value.toString() : value);
+    });
+    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
+        // Don't set Content-Type - let browser set it with boundary for FormData
       },
-      body: JSON.stringify(details),
+      body: formData,
       signal: controller.signal,
     });
     

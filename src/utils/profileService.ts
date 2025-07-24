@@ -96,9 +96,7 @@ const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any)
   const url = `${getApiBaseUrl()}${endpoint}`;
   const oauthToken = getOAuthToken();
   
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  };
+  const headers: Record<string, string> = {};
 
   // Add OAuth token to headers if available
   if (oauthToken) {
@@ -111,7 +109,16 @@ const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any)
   };
 
   if (data && method === 'POST') {
-    config.body = JSON.stringify(data);
+    // Convert data to FormData format instead of JSON
+    const formData = new FormData();
+    Object.keys(data).forEach(key => {
+      const value = data[key];
+      // Convert boolean values to strings for FormData
+      formData.append(key, typeof value === 'boolean' ? value.toString() : value);
+    });
+    
+    // Don't set Content-Type header - let browser set it with boundary for FormData
+    config.body = formData;
   }
 
   try {
