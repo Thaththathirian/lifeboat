@@ -619,3 +619,45 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<boo
     throw error;
   }
 };
+
+// Verify mobile with Firebase token
+export const verifyMobileWithToken = async (firebaseToken: string): Promise<boolean> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/verify_mobile`;
+    console.log('Verifying mobile with Firebase token at:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    // Convert to FormData format as shown in the image
+    const formData = new FormData();
+    formData.append('firebaseToken', firebaseToken);
+    
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        // Don't set Content-Type - let browser set it with boundary for FormData
+      },
+      body: formData,
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.success || false;
+  } catch (error) {
+    console.error('Failed to verify mobile with Firebase token:', error);
+    throw error;
+  }
+};

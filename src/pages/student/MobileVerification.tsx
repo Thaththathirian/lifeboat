@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { sendOTP, verifyOTP, clearRecaptcha } from "@/utils/firebase";
+import { verifyMobileWithToken } from "@/utils/backendService";
 
 interface GoogleUser {
   id: string;
@@ -234,38 +235,48 @@ export default function MobileVerification() {
     setIsLoading(true);
     
     try {
-      console.log('Original mode: Verifying OTP via Firebase');
+      console.log('Verifying OTP via Firebase');
       
       // Verify OTP with Firebase
       const result = await verifyOTP(confirmationResult, otp);
       
-      if (result.success && result.user) {
-        // Firebase verification successful - no backend needed
+      if (result.success && result.user && result.idToken) {
+        // Firebase verification successful
         console.log('Firebase OTP verification successful:', result.user);
         
-        // Update profile with combined data
-        setProfile({
-          ...profile,
-          mobile: mobileNumber,
-          firebaseUid: result.user.uid,
-          ...googleUserData
-        });
-        setStatus('Profile Pending');
+        // Call backend API with Firebase token
+        console.log('Calling backend API with Firebase token');
+        const backendResult = await verifyMobileWithToken(result.idToken);
         
-        // Set current user for protected routes
-        setCurrentUser({
-          ...googleUserData,
-          mobile: mobileNumber,
-          firebaseUid: result.user.uid,
-        });
-        
-        toast({
-          title: "Verification Successful",
-          description: `Welcome, ${googleUserData.name}! Redirecting to dashboard...`,
-        });
-        
-        // Navigate to student dashboard
-        navigate('/student');
+        if (backendResult) {
+          console.log('Backend mobile verification successful');
+          
+          // Update profile with combined data
+          setProfile({
+            ...profile,
+            mobile: mobileNumber,
+            firebaseUid: result.user.uid,
+            ...googleUserData
+          });
+          setStatus('Profile Pending');
+          
+          // Set current user for protected routes
+          setCurrentUser({
+            ...googleUserData,
+            mobile: mobileNumber,
+            firebaseUid: result.user.uid,
+          });
+          
+          toast({
+            title: "Verification Successful",
+            description: `Welcome, ${googleUserData.name}! Redirecting to dashboard...`,
+          });
+          
+          // Navigate to student dashboard
+          navigate('/student');
+        } else {
+          throw new Error('Backend mobile verification failed');
+        }
       } else {
         throw new Error(result.error || "Firebase verification failed");
       }
