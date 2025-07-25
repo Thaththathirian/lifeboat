@@ -42,6 +42,7 @@ export default function ProfileForm() {
     dob: profile?.dob || "",
     street: profile?.street || "",
     city: profile?.city || "",
+    district: profile?.district || "",
     state: profile?.state || "",
     pinCode: profile?.pinCode || "",
     mobile: profile?.mobile || "",
@@ -442,6 +443,7 @@ export default function ProfileForm() {
           dob: updatedFormData.dob,
           street: updatedFormData.street,
           city: updatedFormData.city,
+          district: updatedFormData.district,
           state: updatedFormData.state,
           pinCode: updatedFormData.pinCode,
           mobile: updatedFormData.mobile,
@@ -513,7 +515,7 @@ export default function ProfileForm() {
   // Check if current step has any errors
   const hasCurrentStepErrors = () => {
     const currentStepFields = {
-      1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email'],
+      1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email'],
       2: ['fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome'],
       3: ['grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness']
     };
@@ -527,7 +529,7 @@ export default function ProfileForm() {
   // Validation functions for each section
   const isPersonalDetailsValid = () => {
     return formData.firstName && formData.lastName && formData.gender && 
-           formData.dob && formData.street && formData.city && 
+           formData.dob && formData.street && formData.city && formData.district &&
            formData.state && formData.pinCode && formData.mobile && formData.email &&
            !hasCurrentStepErrors();
   };
@@ -543,7 +545,7 @@ export default function ProfileForm() {
   const isAllRequiredFieldsFilled = () => {
     // Personal Details
     const personalValid = formData.firstName && formData.lastName && formData.gender && 
-                         formData.dob && formData.street && formData.city && 
+                         formData.dob && formData.street && formData.city && formData.district &&
                          formData.state && formData.pinCode && formData.mobile && formData.email;
     
     // Family Details
@@ -562,7 +564,7 @@ export default function ProfileForm() {
   // Check if there are any validation errors across all sections
   const hasAnyErrors = () => {
     const allFields = [
-      'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email',
+      'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email',
       'fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome',
       'grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness'
     ];
@@ -586,7 +588,7 @@ export default function ProfileForm() {
       
       // Trigger validation for all fields in current step
       const currentStepFields = {
-        1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email'],
+        1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email'],
         2: ['fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome'],
         3: ['grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness']
       };
@@ -654,6 +656,7 @@ export default function ProfileForm() {
             dob: formData.dob,
             street: formData.street,
             city: formData.city,
+            district: formData.district,
             state: formData.state,
             pinCode: formData.pinCode,
             mobile: formData.mobile,
@@ -680,6 +683,8 @@ export default function ProfileForm() {
         
         if (saveResult?.success) {
           console.log('✅ ProfileForm: Save successful, showing success toast');
+          // Clear any previous errors
+          setErrors({});
           // Show success message
           toast({
             title: "Progress Saved!",
@@ -691,14 +696,38 @@ export default function ProfileForm() {
           setCurrentStep(currentStep + 1);
         } else {
           console.log('❌ ProfileForm: Save failed, showing error toast');
-          console.log('❌ Error message:', saveResult?.error || 'Failed to save data');
-          // Show error message from backend
-          const errorMessage = saveResult?.error || 'Failed to save data';
-          toast({
-            title: "Save Failed",
-            description: errorMessage,
-            variant: "destructive",
-          });
+          console.log('❌ Error response:', saveResult);
+          
+          // Handle field-specific errors from backend using fieldErrors
+          if (saveResult?.fieldErrors && Object.keys(saveResult.fieldErrors).length > 0) {
+            const fieldErrors: Record<string, string> = {};
+            
+            // Process each field error from backend
+            Object.entries(saveResult.fieldErrors).forEach(([field, message]) => {
+              // Add space if missing and clean up the message
+              const cleanMessage = typeof message === 'string' 
+                ? message.replace(/([a-z])([A-Z])/g, '$1 $2') // Add space before capital letters
+                : String(message);
+              fieldErrors[field] = cleanMessage;
+            });
+            
+            setErrors(fieldErrors);
+            
+            // Show a general toast message
+            toast({
+              title: "Validation Errors",
+              description: "Please solve the marked errors in inputs above.",
+              variant: "destructive",
+            });
+          } else {
+            // Show generic error message if no field-specific errors
+            const errorMessage = saveResult?.error || 'Failed to save data';
+            toast({
+              title: "Save Failed",
+              description: errorMessage,
+              variant: "destructive",
+            });
+          }
         }
       } catch (error) {
         console.error('Error saving data:', error);
@@ -731,7 +760,7 @@ export default function ProfileForm() {
     
     // Trigger validation for all required fields
     const allRequiredFields = [
-      'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'state', 'pinCode', 'mobile', 'email',
+      'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email',
       'fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome',
       'grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness'
     ];
@@ -813,19 +842,38 @@ export default function ProfileForm() {
       const academicSaveResult = await saveAcademicDetails(academicDetails);
 
       if (!academicSaveResult?.success) {
-        // Show specific field errors if available
-        const errorMessage = academicSaveResult?.error || 'Failed to save academic details';
+        console.log('❌ Submit failed, response:', academicSaveResult);
         
-        // If error contains field-specific errors, set them in the errors state
-        if (academicSaveResult?.fieldErrors) {
-          setErrors(academicSaveResult.fieldErrors);
+        // Handle field-specific errors from backend using fieldErrors
+        if (academicSaveResult?.fieldErrors && Object.keys(academicSaveResult.fieldErrors).length > 0) {
+          const fieldErrors: Record<string, string> = {};
+          
+          // Process each field error from backend
+          Object.entries(academicSaveResult.fieldErrors).forEach(([field, message]) => {
+            // Add space if missing and clean up the message
+            const cleanMessage = typeof message === 'string' 
+              ? message.replace(/([a-z])([A-Z])/g, '$1 $2') // Add space before capital letters
+              : String(message);
+            fieldErrors[field] = cleanMessage;
+          });
+          
+          setErrors(fieldErrors);
+          
+          // Show a general toast message
+          toast({
+            title: "Validation Errors",
+            description: "Please solve the marked errors in inputs above.",
+            variant: "destructive",
+          });
+        } else {
+          // Show generic error message if no field-specific errors
+          const errorMessage = academicSaveResult?.error || 'Failed to save academic details';
+          toast({
+            title: "Submission Failed",
+            description: errorMessage,
+            variant: "destructive",
+          });
         }
-        
-        toast({
-          title: "Submission Failed",
-          description: errorMessage,
-          variant: "destructive",
-        });
         return;
       }
 
@@ -910,6 +958,10 @@ export default function ProfileForm() {
               <div>
                 <label className="text-sm font-medium text-gray-600">City</label>
                 <p className="text-gray-900">{profile?.city || 'Not provided'}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600">District</label>
+                <p className="text-gray-900">{profile?.district || 'Not provided'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">State</label>
@@ -1109,7 +1161,7 @@ export default function ProfileForm() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                       <div>
               <label className="block text-sm font-medium mb-2">
                 City <span className="text-red-500">*</span>
@@ -1127,6 +1179,21 @@ export default function ProfileForm() {
           </div>
                       <div>
               <label className="block text-sm font-medium mb-2">
+                District <span className="text-red-500">*</span>
+              </label>
+            <Input 
+              placeholder="Enter district" 
+              value={formData.district}
+              onChange={(e) => handleInputChange('district', e.target.value)}
+              disabled={isReadOnly}
+              className={getInputStyling('district').className}
+            />
+            {errors.district && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.district}</p>
+            )}
+          </div>
+                      <div>
+              <label className="block text-sm font-medium mb-2">
                 State <span className="text-red-500">*</span>
               </label>
             <Input 
@@ -1140,7 +1207,7 @@ export default function ProfileForm() {
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.state}</p>
             )}
           </div>
-                      <div className="sm:col-span-2 lg:col-span-1">
+                      <div>
               <label className="block text-sm font-medium mb-2">
                 PIN Code <span className="text-red-500">*</span>
               </label>
@@ -1353,8 +1420,13 @@ export default function ProfileForm() {
               placeholder="Enter semester" 
               value={formData.presentSemester}
               onChange={(e) => handleInputChange('presentSemester', e.target.value)}
+              onKeyPress={handleNumberKeyPress}
               disabled={isReadOnly}
+              className={errors.presentSemester ? 'border-red-500' : ''}
             />
+            {errors.presentSemester && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.presentSemester}</p>
+            )}
           </div>
         </div>
 
@@ -1507,102 +1579,148 @@ export default function ProfileForm() {
           <h4 className="text-lg font-semibold mb-4">Academic Marks</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">10th Marks</label>
+              <label className="block text-sm font-medium mb-2">
+                10th Marks <span className="text-xs text-gray-500">(in % out of 100)</span>
+              </label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks in percentage" 
                 value={formData.marks10th}
                 onChange={(e) => handleInputChange('marks10th', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
                 className={errors.marks10th ? 'border-red-500' : ''}
               />
               {errors.marks10th && (
-                <p className="text-red-500 text-xs mt-1">{errors.marks10th}</p>
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marks10th}</p>
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">12th Marks</label>
+              <label className="block text-sm font-medium mb-2">
+                12th Marks <span className="text-xs text-gray-500">(in % out of 100)</span>
+              </label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks in percentage" 
                 value={formData.marks12th}
                 onChange={(e) => handleInputChange('marks12th', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
                 className={errors.marks12th ? 'border-red-500' : ''}
               />
               {errors.marks12th && (
-                <p className="text-red-500 text-xs mt-1">{errors.marks12th}</p>
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marks12th}</p>
               )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 1</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem1}
                 onChange={(e) => handleInputChange('marksSem1', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem1 ? 'border-red-500' : ''}
               />
+              {errors.marksSem1 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem1}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 2</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem2}
                 onChange={(e) => handleInputChange('marksSem2', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem2 ? 'border-red-500' : ''}
               />
+              {errors.marksSem2 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem2}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 3</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem3}
                 onChange={(e) => handleInputChange('marksSem3', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem3 ? 'border-red-500' : ''}
               />
+              {errors.marksSem3 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem3}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 4</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem4}
                 onChange={(e) => handleInputChange('marksSem4', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem4 ? 'border-red-500' : ''}
               />
+              {errors.marksSem4 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem4}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 5</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem5}
                 onChange={(e) => handleInputChange('marksSem5', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem5 ? 'border-red-500' : ''}
               />
+              {errors.marksSem5 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem5}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 6</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem6}
                 onChange={(e) => handleInputChange('marksSem6', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem6 ? 'border-red-500' : ''}
               />
+              {errors.marksSem6 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem6}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 7</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem7}
                 onChange={(e) => handleInputChange('marksSem7', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem7 ? 'border-red-500' : ''}
               />
+              {errors.marksSem7 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem7}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Semester 8</label>
               <Input 
-                placeholder="Enter marks" 
+                placeholder="Enter marks (numbers only)" 
                 value={formData.marksSem8}
                 onChange={(e) => handleInputChange('marksSem8', e.target.value)}
+                onKeyPress={handleNumberKeyPress}
                 disabled={isReadOnly}
+                className={errors.marksSem8 ? 'border-red-500' : ''}
               />
+              {errors.marksSem8 && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem8}</p>
+              )}
             </div>
           </div>
         </div>
@@ -1689,12 +1807,14 @@ export default function ProfileForm() {
   );
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || isSaving) {
     return (
       <div className="space-y-6">
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your saved progress...</p>
+          <p className="text-muted-foreground">
+            {isLoading ? 'Loading your saved progress...' : 'Saving your progress...'}
+          </p>
         </div>
       </div>
     );

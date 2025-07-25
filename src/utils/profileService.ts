@@ -9,6 +9,7 @@ interface PersonalDetails {
   dob: string;
   street: string;
   city: string;
+  district: string;
   state: string;
   pinCode: string;
   mobile: string;
