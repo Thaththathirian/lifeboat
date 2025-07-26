@@ -12,7 +12,7 @@ export interface OTPVerificationResponse {
   success: boolean;
   message: string;
   token?: string;
-  user?: any;
+  user?: Record<string, unknown>;
 }
 
 class OTPService {

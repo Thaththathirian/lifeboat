@@ -15,6 +15,7 @@ interface CollegeDropdownProps {
   onCollegeSelect?: (college: College | null) => void;
   onOtherCollegeDataChange?: (data: {
     collegeName: string;
+    collegePhone: string;
     collegeBankName: string;
     accountNumber: string;
     confirmAccountNumber: string;
@@ -22,6 +23,7 @@ interface CollegeDropdownProps {
   }) => void;
   disabled?: boolean;
   className?: string;
+  errors?: Record<string, string>;
 }
 
 export default function CollegeDropdown({
@@ -30,13 +32,15 @@ export default function CollegeDropdown({
   onCollegeSelect,
   onOtherCollegeDataChange,
   disabled = false,
-  className = ""
+  className = "",
+  errors = {}
 }: CollegeDropdownProps) {
   const [colleges, setColleges] = useState<College[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showOtherFields, setShowOtherFields] = useState(false);
   const [otherCollegeData, setOtherCollegeData] = useState({
     collegeName: "",
+    collegePhone: "",
     collegeBankName: "",
     accountNumber: "",
     confirmAccountNumber: "",
@@ -47,7 +51,23 @@ export default function CollegeDropdown({
   const fetchColleges = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost/lifeboat/Admin/get_all_colleges?status=1');
+      // Get JWT token from localStorage
+      const token = localStorage.getItem('authToken');
+      
+      // Prepare headers
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add authorization header if token is available
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch('http://localhost/lifeboat/Admin/get_all_colleges?status=1', {
+        method: 'GET',
+        headers,
+      });
       const data = await response.json();
       
       if (data.status && data.data) {
@@ -89,6 +109,12 @@ export default function CollegeDropdown({
     };
     setOtherCollegeData(updatedData);
     
+    // Debug logging for account number fields
+    if (field === 'accountNumber' || field === 'confirmAccountNumber') {
+      console.log(`🔍 CollegeDropdown: ${field} changed to:`, value);
+      console.log('Current otherCollegeData:', updatedData);
+    }
+    
     // Notify parent component of the updated bank details
     if (onOtherCollegeDataChange) {
       onOtherCollegeDataChange(updatedData);
@@ -96,7 +122,17 @@ export default function CollegeDropdown({
   };
 
   try {
-    console.log('CollegeDropdown: Rendering with', { colleges: colleges.length, isLoading, value });
+    console.log('CollegeDropdown: Rendering with', { 
+      colleges: colleges.length, 
+      isLoading, 
+      value,
+      errors,
+      otherCollegeData: {
+        accountNumber: otherCollegeData.accountNumber,
+        confirmAccountNumber: otherCollegeData.confirmAccountNumber,
+        accountNumbersMatch: otherCollegeData.accountNumber === otherCollegeData.confirmAccountNumber
+      }
+    });
     return (
       <div className="space-y-4">
         <div className="relative">
@@ -140,7 +176,27 @@ export default function CollegeDropdown({
               value={otherCollegeData.collegeName}
               onChange={(e) => handleOtherFieldChange('collegeName', e.target.value)}
               disabled={disabled}
+              className={errors.collegeName ? 'border-red-500' : ''}
             />
+            {errors.collegeName && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeName}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              College Phone <span className="text-red-500">*</span>
+            </label>
+            <Input
+              placeholder="Enter college phone number"
+              value={otherCollegeData.collegePhone}
+              onChange={(e) => handleOtherFieldChange('collegePhone', e.target.value)}
+              disabled={disabled}
+              className={errors.collegePhone ? 'border-red-500' : ''}
+            />
+            {errors.collegePhone && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegePhone}</p>
+            )}
           </div>
 
           <div>
@@ -152,7 +208,11 @@ export default function CollegeDropdown({
               value={otherCollegeData.collegeBankName}
               onChange={(e) => handleOtherFieldChange('collegeBankName', e.target.value)}
               disabled={disabled}
+              className={errors.collegeBankName ? 'border-red-500' : ''}
             />
+            {errors.collegeBankName && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeBankName}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -165,7 +225,11 @@ export default function CollegeDropdown({
                 value={otherCollegeData.accountNumber}
                 onChange={(e) => handleOtherFieldChange('accountNumber', e.target.value)}
                 disabled={disabled}
+                className={errors.accountNumber ? 'border-red-500' : ''}
               />
+              {errors.accountNumber && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.accountNumber}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">
@@ -176,7 +240,15 @@ export default function CollegeDropdown({
                 value={otherCollegeData.confirmAccountNumber}
                 onChange={(e) => handleOtherFieldChange('confirmAccountNumber', e.target.value)}
                 disabled={disabled}
+                className={errors.confirmAccountNumber ? 'border-red-500' : ''}
               />
+              {errors.confirmAccountNumber && (
+                <p className="text-red-500 text-xs mt-1 font-medium">{errors.confirmAccountNumber}</p>
+              )}
+              {!errors.confirmAccountNumber && otherCollegeData.accountNumber && otherCollegeData.confirmAccountNumber && 
+               otherCollegeData.accountNumber === otherCollegeData.confirmAccountNumber && (
+                <p className="text-green-500 text-xs mt-1 font-medium">✓ Account numbers match</p>
+              )}
             </div>
           </div>
 
@@ -189,7 +261,11 @@ export default function CollegeDropdown({
               value={otherCollegeData.ifscCode}
               onChange={(e) => handleOtherFieldChange('ifscCode', e.target.value)}
               disabled={disabled}
+              className={errors.ifscCode ? 'border-red-500' : ''}
             />
+            {errors.ifscCode && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.ifscCode}</p>
+            )}
           </div>
         </div>
       )}

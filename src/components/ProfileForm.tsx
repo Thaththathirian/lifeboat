@@ -91,6 +91,7 @@ export default function ProfileForm() {
   const [selectedCollege, setSelectedCollege] = useState<any>(null);
   const [otherCollegeData, setOtherCollegeData] = useState({
     collegeName: "",
+    collegePhone: "",
     collegeBankName: "",
     accountNumber: "",
     confirmAccountNumber: "",
@@ -228,6 +229,18 @@ export default function ProfileForm() {
     }
   };
 
+  const handleMarksKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const char = String.fromCharCode(e.which);
+    // Allow digits, decimal point, and backspace
+    if (!/[\d.]/.test(char) && e.which !== 8) { // 8 is backspace
+      e.preventDefault();
+    }
+    // Prevent multiple decimal points
+    if (char === '.' && e.currentTarget.value.includes('.')) {
+      e.preventDefault();
+    }
+  };
+
   const handleMobileKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const char = String.fromCharCode(e.which);
     if (!/\d/.test(char)) {
@@ -310,6 +323,32 @@ export default function ProfileForm() {
       handleInputChange('collegePhone', college.mobile);
       handleInputChange('collegeEmail', college.email);
       handleInputChange('collegeWebsite', college.website);
+    }
+  };
+
+  // Real-time account number validation
+  const validateAccountNumbers = () => {
+    if (formData.collegeName === 'other' && otherCollegeData.accountNumber && otherCollegeData.confirmAccountNumber) {
+      const accountNumber = otherCollegeData.accountNumber.trim();
+      const confirmAccountNumber = otherCollegeData.confirmAccountNumber.trim();
+      
+      console.log('🔍 Real-time account validation:');
+      console.log('accountNumber:', accountNumber);
+      console.log('confirmAccountNumber:', confirmAccountNumber);
+      console.log('Do they match?', accountNumber === confirmAccountNumber);
+      
+      if (accountNumber !== confirmAccountNumber) {
+        setErrors(prev => ({
+          ...prev,
+          confirmAccountNumber: 'Account numbers do not match'
+        }));
+      } else {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.confirmAccountNumber;
+          return newErrors;
+        });
+      }
     }
   };
 
@@ -512,6 +551,11 @@ export default function ProfileForm() {
 
   // Auto-save removed - data is saved when user clicks Next or Submit
 
+  // Real-time account number validation effect
+  useEffect(() => {
+    validateAccountNumbers();
+  }, [otherCollegeData.accountNumber, otherCollegeData.confirmAccountNumber, formData.collegeName]);
+
   // Check if current step has any errors
   const hasCurrentStepErrors = () => {
     const currentStepFields = {
@@ -553,9 +597,10 @@ export default function ProfileForm() {
                        formData.motherName && formData.motherOccupation && 
                        formData.parentsPhone && formData.familyAnnualIncome;
     
-    // Academic Details
+    // Academic Details - handle "Other" college case
+    const effectiveCollegeName = formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName;
     const academicValid = formData.grade && formData.academicYear && 
-                         formData.collegeName && formData.totalCollegeFees && 
+                         effectiveCollegeName && formData.totalCollegeFees && 
                          formData.scholarshipAmountRequired && formData.declaration && formData.awareness;
     
     return personalValid && familyValid && academicValid;
@@ -572,8 +617,10 @@ export default function ProfileForm() {
   };
 
   const isAcademicDetailsValid = () => {
+    // Handle "Other" college case
+    const effectiveCollegeName = formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName;
     return formData.grade && formData.academicYear && 
-           formData.collegeName && formData.totalCollegeFees && 
+           effectiveCollegeName && formData.totalCollegeFees && 
            formData.scholarshipAmountRequired && formData.declaration && formData.awareness &&
            !hasCurrentStepErrors();
   };
@@ -775,6 +822,49 @@ export default function ProfileForm() {
         }));
       }
     });
+
+    // Additional validation for "Other" college fields
+    if (formData.collegeName === 'other') {
+      const otherCollegeFields = [
+        { field: 'collegeName', value: otherCollegeData.collegeName, label: 'College Name' },
+        { field: 'collegePhone', value: otherCollegeData.collegePhone, label: 'College Phone' },
+        { field: 'collegeBankName', value: otherCollegeData.collegeBankName, label: 'College Bank Name' },
+        { field: 'accountNumber', value: otherCollegeData.accountNumber, label: 'Account Number' },
+        { field: 'confirmAccountNumber', value: otherCollegeData.confirmAccountNumber, label: 'Confirm Account Number' },
+        { field: 'ifscCode', value: otherCollegeData.ifscCode, label: 'IFSC Code' }
+      ];
+
+      otherCollegeFields.forEach(({ field, value, label }) => {
+        if (!value || value.trim() === '') {
+          setErrors(prev => ({
+            ...prev,
+            [field]: `${label} is required when selecting "Other" college`
+          }));
+        }
+      });
+
+      // Validate account number confirmation
+      console.log('🔍 Account number validation:');
+      console.log('accountNumber:', otherCollegeData.accountNumber);
+      console.log('confirmAccountNumber:', otherCollegeData.confirmAccountNumber);
+      console.log('Do they match?', otherCollegeData.accountNumber === otherCollegeData.confirmAccountNumber);
+      
+      if (otherCollegeData.accountNumber && otherCollegeData.confirmAccountNumber && 
+          otherCollegeData.accountNumber !== otherCollegeData.confirmAccountNumber) {
+        console.log('❌ Account numbers do not match - setting error');
+        setErrors(prev => ({
+          ...prev,
+          confirmAccountNumber: 'Account numbers do not match'
+        }));
+      } else if (otherCollegeData.accountNumber && otherCollegeData.confirmAccountNumber) {
+        console.log('✅ Account numbers match - clearing error');
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.confirmAccountNumber;
+          return newErrors;
+        });
+      }
+    }
     
     // Validate all sections before submitting
     if (!isAllRequiredFieldsFilled()) {
@@ -813,8 +903,8 @@ export default function ProfileForm() {
         grade: formData.grade,
         presentSemester: formData.presentSemester,
         academicYear: formData.academicYear,
-        collegeName: formData.collegeName,
-        collegePhone: formData.collegePhone,
+        collegeName: formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName,
+        collegePhone: formData.collegeName === 'other' ? otherCollegeData.collegePhone : formData.collegePhone,
         collegeEmail: formData.collegeEmail,
         collegeWebsite: formData.collegeWebsite,
         referencePersonName: formData.referencePersonName,
@@ -837,7 +927,29 @@ export default function ProfileForm() {
         declaration: formData.declaration,
         arrears: formData.arrears,
         awareness: formData.awareness,
+        // Add these fields if collegeName is 'other'
+        ...(formData.collegeName === 'other' && {
+          bankName: otherCollegeData.collegeBankName, // map to bankName
+          accountNumber: otherCollegeData.accountNumber,
+          confirmAccountNumber: otherCollegeData.confirmAccountNumber,
+          ifscCode: otherCollegeData.ifscCode
+        })
       };
+
+      // Debug logging
+      console.log('🔍 Debug - Form submission details:');
+      console.log('formData.collegeName:', formData.collegeName);
+      console.log('otherCollegeData:', otherCollegeData);
+      console.log('Is collegeName === "other"?', formData.collegeName === 'other');
+      console.log('Final collegeName in payload:', formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName);
+      console.log('Final collegePhone in payload:', formData.collegeName === 'other' ? otherCollegeData.collegePhone : formData.collegePhone);
+      console.log('Bank details in payload:', {
+        bankName: formData.collegeName === 'other' ? otherCollegeData.collegeBankName : undefined,
+        accountNumber: formData.collegeName === 'other' ? otherCollegeData.accountNumber : undefined,
+        confirmAccountNumber: formData.collegeName === 'other' ? otherCollegeData.confirmAccountNumber : undefined,
+        ifscCode: formData.collegeName === 'other' ? otherCollegeData.ifscCode : undefined
+      });
+      console.log('Final academicDetails payload:', academicDetails);
 
       const academicSaveResult = await saveAcademicDetails(academicDetails);
 
@@ -1458,6 +1570,7 @@ export default function ProfileForm() {
               onOtherCollegeDataChange={setOtherCollegeData}
               disabled={isReadOnly}
               className={getInputStyling('collegeName').className}
+              errors={errors}
             />
             {errors.collegeName && (
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeName}</p>
@@ -1586,7 +1699,7 @@ export default function ProfileForm() {
                 placeholder="Enter marks in percentage" 
                 value={formData.marks10th}
                 onChange={(e) => handleInputChange('marks10th', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marks10th ? 'border-red-500' : ''}
               />
@@ -1602,7 +1715,7 @@ export default function ProfileForm() {
                 placeholder="Enter marks in percentage" 
                 value={formData.marks12th}
                 onChange={(e) => handleInputChange('marks12th', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marks12th ? 'border-red-500' : ''}
               />
@@ -1613,10 +1726,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 1</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem1}
                 onChange={(e) => handleInputChange('marksSem1', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem1 ? 'border-red-500' : ''}
               />
@@ -1627,10 +1740,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 2</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem2}
                 onChange={(e) => handleInputChange('marksSem2', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem2 ? 'border-red-500' : ''}
               />
@@ -1641,10 +1754,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 3</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem3}
                 onChange={(e) => handleInputChange('marksSem3', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem3 ? 'border-red-500' : ''}
               />
@@ -1655,10 +1768,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 4</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem4}
                 onChange={(e) => handleInputChange('marksSem4', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem4 ? 'border-red-500' : ''}
               />
@@ -1669,10 +1782,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 5</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem5}
                 onChange={(e) => handleInputChange('marksSem5', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem5 ? 'border-red-500' : ''}
               />
@@ -1683,10 +1796,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 6</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem6}
                 onChange={(e) => handleInputChange('marksSem6', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem6 ? 'border-red-500' : ''}
               />
@@ -1697,10 +1810,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 7</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem7}
                 onChange={(e) => handleInputChange('marksSem7', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem7 ? 'border-red-500' : ''}
               />
@@ -1711,10 +1824,10 @@ export default function ProfileForm() {
             <div>
               <label className="block text-sm font-medium mb-2">Semester 8</label>
               <Input 
-                placeholder="Enter marks (numbers only)" 
+                placeholder="Enter marks (can include decimals)" 
                 value={formData.marksSem8}
                 onChange={(e) => handleInputChange('marksSem8', e.target.value)}
-                onKeyPress={handleNumberKeyPress}
+                onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
                 className={errors.marksSem8 ? 'border-red-500' : ''}
               />

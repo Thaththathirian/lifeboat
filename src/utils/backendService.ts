@@ -10,7 +10,7 @@ interface GoogleUser {
 
 interface BackendAuthResponse {
   success: boolean;
-  user?: any;
+  user?: Record<string, unknown>;
   error?: string;
   token?: string;
 }
@@ -230,7 +230,7 @@ Response:
 
 // Profile draft management functions
 interface ProfileDraft {
-  formData: any;
+  formData: Record<string, unknown>;
   currentStep: number;
   lastSaved: string;
 }
@@ -404,7 +404,26 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
     }
 
     const data = await response.json();
-    return data.data || null;
+    
+    // Map snake_case API response to camelCase form field names
+    if (data.data) {
+      const mappedData = {
+        firstName: data.data.first_name || data.data.firstName || '',
+        lastName: data.data.last_name || data.data.lastName || '',
+        gender: data.data.gender || '',
+        dob: data.data.dob || '',
+        street: data.data.street || '',
+        city: data.data.city || '',
+        district: data.data.district || '',
+        state: data.data.state || '',
+        pinCode: data.data.pincode || data.data.pinCode || '',
+        mobile: data.data.mobile || '',
+        email: data.data.email || ''
+      };
+      return mappedData;
+    }
+    
+    return null;
   } catch (error) {
     console.error('Failed to get personal details:', error);
     return null;
@@ -531,7 +550,22 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
     }
 
     const data = await response.json();
-    return data.data || null;
+    
+    // Map snake_case API response to camelCase form field names
+    if (data.data) {
+      const mappedData = {
+        fatherName: data.data.father_name || data.data.fatherName || '',
+        fatherOccupation: data.data.father_occupation || data.data.fatherOccupation || '',
+        motherName: data.data.mother_name || data.data.motherName || '',
+        motherOccupation: data.data.mother_occupation || data.data.motherOccupation || '',
+        parentsPhone: data.data.parents_phone || data.data.parentsPhone || '',
+        familyDetails: data.data.family_details || data.data.familyDetails || '',
+        familyAnnualIncome: data.data.family_annual_income || data.data.familyAnnualIncome || ''
+      };
+      return mappedData;
+    }
+    
+    return null;
   } catch (error) {
     console.error('Failed to get family details:', error);
     return null;
@@ -655,7 +689,47 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
     }
 
     const data = await response.json();
-    return data.data || null;
+    
+    // Map snake_case API response to camelCase form field names
+    if (data.data) {
+      const mappedData = {
+        grade: data.data.grade || '',
+        presentSemester: data.data.present_semester || data.data.presentSemester || '',
+        academicYear: data.data.academic_year || data.data.academicYear || '',
+        collegeName: data.data.college_name || data.data.collegeName || '',
+        collegePhone: data.data.college_phone || data.data.collegePhone || '',
+        collegeEmail: data.data.college_email || data.data.collegeEmail || '',
+        collegeWebsite: data.data.college_website || data.data.collegeWebsite || '',
+        referencePersonName: data.data.reference_person_name || data.data.referencePersonName || '',
+        referencePersonQualification: data.data.reference_person_qualification || data.data.referencePersonQualification || '',
+        referencePersonPosition: data.data.reference_person_position || data.data.referencePersonPosition || '',
+        referencePersonPhone: data.data.reference_person_phone || data.data.referencePersonPhone || '',
+        referencePersonEmail: data.data.reference_person_email || data.data.referencePersonEmail || '',
+        totalCollegeFees: data.data.total_college_fees || data.data.totalCollegeFees || '',
+        scholarshipAmountRequired: data.data.scholarship_amount_required || data.data.scholarshipAmountRequired || '',
+        marks10th: data.data.marks_10th || data.data.marks10th || '',
+        marks12th: data.data.marks_12th || data.data.marks12th || '',
+        marksSem1: data.data.marks_sem1 || data.data.marksSem1 || '',
+        marksSem2: data.data.marks_sem2 || data.data.marksSem2 || '',
+        marksSem3: data.data.marks_sem3 || data.data.marksSem3 || '',
+        marksSem4: data.data.marks_sem4 || data.data.marksSem4 || '',
+        marksSem5: data.data.marks_sem5 || data.data.marksSem5 || '',
+        marksSem6: data.data.marks_sem6 || data.data.marksSem6 || '',
+        marksSem7: data.data.marks_sem7 || data.data.marksSem7 || '',
+        marksSem8: data.data.marks_sem8 || data.data.marksSem8 || '',
+        declaration: data.data.declaration || false,
+        arrears: data.data.arrears || '',
+        awareness: data.data.awareness || false,
+        // Optional bank details for "other" college
+        collegeBankName: data.data.college_bank_name || data.data.collegeBankName || '',
+        accountNumber: data.data.account_number || data.data.accountNumber || '',
+        confirmAccountNumber: data.data.confirm_account_number || data.data.confirmAccountNumber || '',
+        ifscCode: data.data.ifsc_code || data.data.ifscCode || ''
+      };
+      return mappedData;
+    }
+    
+    return null;
   } catch (error) {
     console.error('Failed to get academic details:', error);
     return null;
@@ -851,5 +925,85 @@ export const verifyMobileWithToken = async (firebaseToken: string): Promise<bool
   } catch (error) {
     console.error('Failed to verify mobile with Firebase token:', error);
     throw error;
+  }
+};
+
+// Get current student status
+export const getCurrentStatus = async (): Promise<{ status: number } | null> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/get_current_status`;
+    console.log('Fetching current status from:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No status found
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || null;
+  } catch (error) {
+    console.error('Failed to get current status:', error);
+    return null;
+  }
+};
+
+// Get submitted profile data
+export const getSubmittedProfileData = async (): Promise<Record<string, unknown> | null> => {
+  try {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const apiUrl = `${getApiBaseUrl()}/Student/get_submitted_profile`;
+    console.log('Fetching submitted profile from:', apiUrl);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No submitted profile found
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.data || null;
+  } catch (error) {
+    console.error('Failed to get submitted profile data:', error);
+    return null;
   }
 };

@@ -93,7 +93,7 @@ const getOAuthToken = () => {
 };
 
 // Helper function to make API calls
-const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: any) => {
+const makeApiCall = async (endpoint: string, method: 'GET' | 'POST', data?: Record<string, unknown>) => {
   const url = `${getApiBaseUrl()}${endpoint}`;
   const oauthToken = getOAuthToken();
   
@@ -166,10 +166,25 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
   const result = await makeApiCall('/Student/get_personal_details', 'GET');
   
   if (result && result.status === true && result.data) {
-    cache.personalDetails = result.data;
+    // Map snake_case API response to camelCase form field names
+    const mappedData = {
+      firstName: result.data.first_name || result.data.firstName || '',
+      lastName: result.data.last_name || result.data.lastName || '',
+      gender: result.data.gender || '',
+      dob: result.data.dob || '',
+      street: result.data.street || '',
+      city: result.data.city || '',
+      district: result.data.district || '',
+      state: result.data.state || '',
+      pinCode: result.data.pincode || result.data.pinCode || '',
+      mobile: result.data.mobile || '',
+      email: result.data.email || ''
+    };
+    
+    cache.personalDetails = mappedData;
     cache.lastFetch.personalDetails = Date.now();
     console.log('Personal details cached successfully');
-    return result.data;
+    return mappedData;
   }
   
   return null;
@@ -231,10 +246,21 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
   const result = await makeApiCall('/Student/get_family_details', 'GET');
   
   if (result && result.status === true && result.data) {
-    cache.familyDetails = result.data;
+    // Map snake_case API response to camelCase form field names
+    const mappedData = {
+      fatherName: result.data.father_name || result.data.fatherName || '',
+      fatherOccupation: result.data.father_occupation || result.data.fatherOccupation || '',
+      motherName: result.data.mother_name || result.data.motherName || '',
+      motherOccupation: result.data.mother_occupation || result.data.motherOccupation || '',
+      parentsPhone: result.data.parents_phone || result.data.parentsPhone || '',
+      familyDetails: result.data.family_details || result.data.familyDetails || '',
+      familyAnnualIncome: result.data.family_annual_income || result.data.familyAnnualIncome || ''
+    };
+    
+    cache.familyDetails = mappedData;
     cache.lastFetch.familyDetails = Date.now();
     console.log('Family details cached successfully');
-    return result.data;
+    return mappedData;
   }
   
   return null;
@@ -296,10 +322,41 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
   const result = await makeApiCall('/Student/get_academic_details', 'GET');
   
   if (result && result.status === true && result.data) {
-    cache.academicDetails = result.data;
+    // Map snake_case API response to camelCase form field names
+    const mappedData = {
+      grade: result.data.grade || '',
+      presentSemester: result.data.present_semester || result.data.presentSemester || '',
+      academicYear: result.data.academic_year || result.data.academicYear || '',
+      collegeName: result.data.college_name || result.data.collegeName || '',
+      collegePhone: result.data.college_phone || result.data.collegePhone || '',
+      collegeEmail: result.data.college_email || result.data.collegeEmail || '',
+      collegeWebsite: result.data.college_website || result.data.collegeWebsite || '',
+      referencePersonName: result.data.reference_person_name || result.data.referencePersonName || '',
+      referencePersonQualification: result.data.reference_person_qualification || result.data.referencePersonQualification || '',
+      referencePersonPosition: result.data.reference_person_position || result.data.referencePersonPosition || '',
+      referencePersonPhone: result.data.reference_person_phone || result.data.referencePersonPhone || '',
+      referencePersonEmail: result.data.reference_person_email || result.data.referencePersonEmail || '',
+      totalCollegeFees: result.data.total_college_fees || result.data.totalCollegeFees || '',
+      scholarshipAmountRequired: result.data.scholarship_amount_required || result.data.scholarshipAmountRequired || '',
+      marks10th: result.data.marks_10th || result.data.marks10th || '',
+      marks12th: result.data.marks_12th || result.data.marks12th || '',
+      marksSem1: result.data.marks_sem1 || result.data.marksSem1 || '',
+      marksSem2: result.data.marks_sem2 || result.data.marksSem2 || '',
+      marksSem3: result.data.marks_sem3 || result.data.marksSem3 || '',
+      marksSem4: result.data.marks_sem4 || result.data.marksSem4 || '',
+      marksSem5: result.data.marks_sem5 || result.data.marksSem5 || '',
+      marksSem6: result.data.marks_sem6 || result.data.marksSem6 || '',
+      marksSem7: result.data.marks_sem7 || result.data.marksSem7 || '',
+      marksSem8: result.data.marks_sem8 || result.data.marksSem8 || '',
+      declaration: result.data.declaration || false,
+      arrears: result.data.arrears || '',
+      awareness: result.data.awareness || false
+    };
+    
+    cache.academicDetails = mappedData;
     cache.lastFetch.academicDetails = Date.now();
     console.log('Academic details cached successfully');
-    return result.data;
+    return mappedData;
   }
   
   return null;
