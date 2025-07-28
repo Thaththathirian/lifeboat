@@ -10,6 +10,7 @@ import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { sendOTP, verifyOTP, clearRecaptcha } from "@/utils/firebase";
 import { verifyMobileWithToken } from "@/utils/backendService";
+import { StudentStatusSync } from "@/components/StudentStatusSync";
 
 interface GoogleUser {
   id: string;
@@ -315,6 +316,7 @@ export default function MobileVerification() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
+      <StudentStatusSync />
       <div className="max-w-md w-full">
         <Card className="shadow-xl">
           <CardHeader className="text-center">

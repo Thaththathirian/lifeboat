@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useStudent } from "@/contexts/StudentContext";
 import { useEffect, useState, useCallback } from "react";
-import { getSubmittedProfileData, getPersonalDetails, getFamilyDetails, getAcademicDetails, getCurrentStatus } from "@/utils/backendService";
+import { getSubmittedProfileData, getPersonalDetails, getFamilyDetails, getAcademicDetails } from "@/utils/backendService";
 import { StudentStatus } from "@/types/student";
 import { Loader2 } from "lucide-react";
+import { useStudentStatus } from "@/components/layout/StudentStatusProvider";
 
 interface Mark {
   exam_name: string;
@@ -91,11 +92,11 @@ interface SubmittedProfileDisplayProps {
 
 export default function SubmittedProfileDisplay({ onIncompleteProfile }: SubmittedProfileDisplayProps) {
   const { status, setStatus } = useStudent();
+  const { currentApiStatus, loading: statusLoading, error: statusError } = useStudentStatus();
   const [submittedData, setSubmittedData] = useState<SubmittedProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [incompleteSections, setIncompleteSections] = useState<string[]>([]);
-  const [currentStudentStatus, setCurrentStudentStatus] = useState<number | null>(null);
 
   // Function to check if required fields are null/missing
   const checkProfileCompleteness = (data: SubmittedProfileData): boolean => {
@@ -250,19 +251,14 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
         setLoading(true);
         setError(null);
         
-        // First, get the current student status
-        console.log('Fetching current student status...');
-        const statusResponse = await getCurrentStatus();
+        // Use the current API status from the context
+        const studentStatus = currentApiStatus;
+        console.log('Current student status from API:', studentStatus);
         
-        if (!statusResponse) {
-          console.log('Failed to get current status');
-          setError('Failed to get current status');
+        if (studentStatus === null) {
+          console.log('No status available yet, waiting...');
           return;
         }
-        
-        const studentStatus = statusResponse.status;
-        setCurrentStudentStatus(studentStatus);
-        console.log('Current student status:', studentStatus);
         
         if (studentStatus === StudentStatus.MOBILE_VERIFIED) {
           // Status 1: User only updated OTP - always show form filling page
@@ -272,7 +268,6 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
           // For status 1, always show the form filling page
           if (onIncompleteProfile) {
             console.log('Status 1: Always showing form filling page');
-            setStatus('profile_form_required');
             onIncompleteProfile(hasIncompleteSections ? incompleteSections : []);
             return;
           }
@@ -283,10 +278,10 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
           
           if (data) {
             console.log('Received submitted profile data:', data);
-            setSubmittedData(data);
+            setSubmittedData(data as unknown as SubmittedProfileData);
             
             // Check if profile is complete using the submitted data
-            const isComplete = checkProfileCompleteness(data);
+            const isComplete = checkProfileCompleteness(data as unknown as SubmittedProfileData);
             console.log('Profile completeness check:', isComplete);
             
             if (!isComplete && onIncompleteProfile) {
@@ -305,7 +300,6 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
         } else if (studentStatus === StudentStatus.NEW_USER) {
           // Status 0: New user - needs mobile verification
           console.log('Status is NEW_USER (0), user needs mobile verification');
-          setStatus('mobile_verification_required');
           setError('Mobile verification required. Please verify your mobile number to continue.');
         } else {
           console.log('Status not handled:', studentStatus);
@@ -319,10 +313,10 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
       }
     };
 
-    if (status === 'Profile Pending') {
+    if (status === 'Profile Pending' && currentApiStatus !== null) {
       fetchData();
     }
-  }, [status, onIncompleteProfile, setStatus, checkIndividualSections, incompleteSections]);
+  }, [status, currentApiStatus, onIncompleteProfile, setStatus, checkIndividualSections, incompleteSections]);
 
   if (status !== 'Profile Pending') {
     return null;
@@ -337,12 +331,12 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
           </div>
           <CardTitle className="text-xl text-blue-600">Loading Profile Data</CardTitle>
           <p className="text-muted-foreground mt-2">
-            {currentStudentStatus === StudentStatus.NEW_USER && "Checking mobile verification status..."}
-            {currentStudentStatus === StudentStatus.MOBILE_VERIFIED && "Loading profile form..."}
-            {currentStudentStatus === StudentStatus.PROFILE_UPDATED && "Loading submitted profile..."}
-            {currentStudentStatus === StudentStatus.INTERVIEW_SCHEDULED && "Loading interview details..."}
-            {currentStudentStatus === StudentStatus.DOCUMENT_UPLOADED && "Loading document status..."}
-            {!currentStudentStatus && "Checking your application status..."}
+            {currentApiStatus === StudentStatus.NEW_USER && "Checking mobile verification status..."}
+            {currentApiStatus === StudentStatus.MOBILE_VERIFIED && "Loading profile form..."}
+            {currentApiStatus === StudentStatus.PROFILE_UPDATED && "Loading submitted profile..."}
+            {currentApiStatus === StudentStatus.INTERVIEW_SCHEDULED && "Loading interview details..."}
+            {currentApiStatus === StudentStatus.DOCUMENT_UPLOADED && "Loading document status..."}
+            {!currentApiStatus && "Checking your application status..."}
           </p>
         </CardHeader>
       </Card>

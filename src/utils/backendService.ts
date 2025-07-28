@@ -28,6 +28,11 @@ const getApiBaseUrl = () => {
   return 'http://localhost/lifeboat';
 };
 
+// Debounce mechanism to prevent multiple simultaneous status API calls
+let statusApiCallInProgress = false;
+let lastStatusCallTime = 0;
+const STATUS_API_DEBOUNCE_TIME = 2000; // 2 seconds debounce
+
 // Send Google OAuth token to backend for verification and user creation
 export const authenticateWithBackend = async (
   googleToken: string, 
@@ -125,6 +130,7 @@ export const verifySession = async (): Promise<BackendAuthResponse> => {
     }
 
     const data = await response.json();
+    
     return {
       success: true,
       user: data.user
@@ -936,8 +942,25 @@ export const getCurrentStatus = async (): Promise<{ status: number } | null> => 
       throw new Error('No authentication token found');
     }
 
+    // Check if a status API call is already in progress
+    if (statusApiCallInProgress) {
+      console.log('⚠️ Status API call already in progress, skipping...');
+      return null;
+    }
+
+    // Check if we're within the debounce time
+    const now = Date.now();
+    if (now - lastStatusCallTime < STATUS_API_DEBOUNCE_TIME) {
+      console.log('⚠️ Status API call debounced, last call was', now - lastStatusCallTime, 'ms ago');
+      return null;
+    }
+
+    // Set the flag to prevent multiple simultaneous calls
+    statusApiCallInProgress = true;
+    lastStatusCallTime = now;
+
     const apiUrl = `${getApiBaseUrl()}/Student/get_current_status`;
-    console.log('Fetching current status from:', apiUrl);
+    console.log('🔄 Fetching current status from:', apiUrl);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -961,11 +984,35 @@ export const getCurrentStatus = async (): Promise<{ status: number } | null> => 
     }
 
     const data = await response.json();
-    return data.data || null;
-  } catch (error) {
-    console.error('Failed to get current status:', error);
+    console.log('✅ Status API response:', data);
+    
+    // Handle the new response format
+    if (data.status === true && data.data && data.data.status) {
+      const statusNumber = parseInt(data.data.status, 10);
+      console.log('📊 Parsed status number:', statusNumber);
+      return { status: statusNumber };
+    }
+    
     return null;
+  } catch (error) {
+    console.error('❌ Failed to get current status:', error);
+    return null;
+  } finally {
+    // Always reset the flag, even if there's an error
+    statusApiCallInProgress = false;
   }
+};
+
+// Force sync current status - can be called from any component
+export const forceSyncCurrentStatus = async (): Promise<{ status: number } | null> => {
+  console.log('🔄 Force syncing current status...');
+  const result = await getCurrentStatus();
+  if (result) {
+    console.log('✅ Force sync successful:', result);
+  } else {
+    console.log('⚠️ Force sync skipped (debounced or already in progress)');
+  }
+  return result;
 };
 
 // Get submitted profile data

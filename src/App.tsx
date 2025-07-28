@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { StudentProvider } from "@/contexts/StudentContext"
 import { pageStateManager } from "@/utils/pageState"
 import { StudentStatusProvider } from '@/components/layout/StudentStatusProvider'
+import { StudentStatusSync } from '@/components/StudentStatusSync'
 
 // Pages
 import LandingPage from "@/pages/LandingPage"
@@ -458,6 +459,7 @@ function App() {
           <Route path="/student" element={
             <ProtectedRoute allowedUserType="student">
               <StudentStatusProvider>
+                <StudentStatusSync />
                 <DashboardLayout
                   userType="student"
                   userName={currentUser?.name || ""}
@@ -474,6 +476,7 @@ function App() {
           <Route path="/student/profile" element={
             <ProtectedRoute allowedUserType="student">
               <StudentStatusProvider>
+                <StudentStatusSync />
                 <DashboardLayout
                   userType="student"
                   userName={currentUser?.name || ""}
@@ -490,6 +493,7 @@ function App() {
           <Route path="/student/application" element={
             <ProtectedRoute allowedUserType="student">
               <StudentStatusProvider>
+                <StudentStatusSync />
                 <DashboardLayout
                   userType="student"
                   userName={currentUser?.name || ""}
