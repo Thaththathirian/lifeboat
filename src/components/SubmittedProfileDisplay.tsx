@@ -313,12 +313,14 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
       }
     };
 
-    if (status === 'Profile Pending' && currentApiStatus !== null) {
+    // Fetch data when API status is available and we're in a relevant status
+    if (currentApiStatus !== null && (currentApiStatus === StudentStatus.MOBILE_VERIFIED || currentApiStatus === StudentStatus.PROFILE_UPDATED)) {
       fetchData();
     }
-  }, [status, currentApiStatus, onIncompleteProfile, setStatus, checkIndividualSections, incompleteSections]);
+  }, [currentApiStatus, onIncompleteProfile, setStatus, checkIndividualSections, incompleteSections]);
 
-  if (status !== 'Profile Pending') {
+  // Only render when API status is PROFILE_UPDATED (2) or when we have submitted data
+  if (currentApiStatus !== StudentStatus.PROFILE_UPDATED && !submittedData) {
     return null;
   }
 

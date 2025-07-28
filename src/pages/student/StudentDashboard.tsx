@@ -9,8 +9,11 @@ import { getTotalReceived, getLastReceived } from "./StudentPayments"
 import { useNavigate } from "react-router-dom";
 import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
+import { useStudentStatusSync } from '@/hooks/useStudentStatusSync';
+import { StudentStatus } from '@/types/student';
 import { useToast } from "@/hooks/use-toast";
 import ProfileForm from "@/components/ProfileForm";
+import SubmittedProfileDisplay from "@/components/SubmittedProfileDisplay";
 
 function ApplyForNextModal({ open, onClose }: { open: boolean, onClose: () => void }) {
   const [form, setForm] = useState({
@@ -72,6 +75,13 @@ export default function StudentDashboard() {
   const lastReceived = getLastReceived();
   const navigate = useNavigate();
 
+  // Get the current API status from the sync hook
+  const { currentStatus: currentApiStatus } = useStudentStatusSync({
+    autoSync: false,
+    onStatusChange: () => {},
+    onError: () => {},
+  });
+
   // Get username from email/profile or first letter of name
   const getUsername = () => {
     if (profile?.email) {
@@ -114,7 +124,45 @@ export default function StudentDashboard() {
   // Status-driven dashboard content
   const getStatusCard = () => {
     console.log('Current status:', status);
+    console.log('Current API status:', currentApiStatus);
     
+    // Handle status 1 (MOBILE_VERIFIED) - Show form application
+    if (currentApiStatus === StudentStatus.MOBILE_VERIFIED) {
+      console.log('Status is MOBILE_VERIFIED (1), showing form application...');
+      return (
+        <Card className="mb-6 border-l-4 border-l-blue-500">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
+            <p className="text-muted-foreground mt-2">
+              Please fill out your profile details below to continue your scholarship application.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <ProfileForm />
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    // Handle status 2 (PROFILE_UPDATED) - Show completed form
+    if (currentApiStatus === StudentStatus.PROFILE_UPDATED) {
+      console.log('Status is PROFILE_UPDATED (2), showing completed form...');
+      return (
+        <Card className="mb-6 border-l-4 border-l-green-500">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Profile Submitted Successfully</CardTitle>
+            <p className="text-muted-foreground mt-2">
+              Your profile has been submitted and is pending verification. You can view your submitted details below.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <SubmittedProfileDisplay />
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Handle other statuses with existing logic
     // Always show form on home page if profile is not submitted or under verification
     if (!profile?.submitted || status === 'Profile Pending' || status === 'Profile Under Verification') {
       return (
