@@ -64,7 +64,7 @@ export default function CollegeDropdown({
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch('http://localhost/lifeboat/Admin/get_all_colleges?status=1', {
+      const response = await fetch('http://localhost/lifeboat/Student/get_all_colleges?status=1', {
         method: 'GET',
         headers,
       });
