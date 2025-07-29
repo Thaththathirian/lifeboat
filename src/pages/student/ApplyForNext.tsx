@@ -32,7 +32,7 @@ export default function ApplyForNext() {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 text-center">
           <div className="font-bold text-lg mb-4 text-green-700">Application Submitted!</div>
           <div className="mb-4 text-gray-700">Your application for the next semester has been submitted successfully. You will be notified once it is reviewed.</div>
-          <button className="bg-blue-600 text-white rounded px-6 py-2 mt-2" onClick={() => navigate('/student')}>Back to Dashboard</button>
+          <button className="bg-blue-600 text-white rounded px-6 py-2 mt-2" onClick={() => navigate('/student')}>Back to Home</button>
         </div>
       </div>
     );

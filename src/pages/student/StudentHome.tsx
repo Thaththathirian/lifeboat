@@ -112,8 +112,8 @@ export default function StudentHome() {
   // Show payment stats if status is 'Paid' or later
   const showPaymentStats = paymentStatsStatuses.includes(status);
 
-  // List of statuses that should show the main dashboard summary
-  const dashboardSummaryStatuses = [
+  // List of statuses that should show the main home summary
+  const homeSummaryStatuses = [
     'Paid',
     'Academic Documents Pending',
     'Academic verification pending',
@@ -121,7 +121,7 @@ export default function StudentHome() {
     'Alumni',
   ];
 
-  // Status-driven dashboard content
+  // Status-driven home content
   const getStatusCard = () => {
     console.log('Current status:', status);
     console.log('Current API status:', currentApiStatus);

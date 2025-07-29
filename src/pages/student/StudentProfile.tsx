@@ -9,29 +9,21 @@ export default function StudentProfile() {
   const { status, profile } = useStudent();
   const navigate = useNavigate();
 
-  // If no profile is submitted, redirect to dashboard
+  // If no profile is submitted, redirect to home
   if (!profile?.submitted) {
     return (
-      <div className="flex flex-col items-center w-full min-h-[calc(100vh-4rem)] py-4 sm:py-6 md:py-8 px-2 sm:px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-4xl"
-        >
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-red-600">Profile Not Submitted</CardTitle>
-              <p className="text-muted-foreground mt-2">
-                You haven't submitted your profile yet. Please complete your profile first.
-              </p>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-              <Button onClick={() => navigate('/student/dashboard')}>
-                Go to Dashboard
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl text-red-600">Profile Not Submitted</CardTitle>
+            <p className="text-gray-600">You haven't submitted your profile yet. Please complete your profile first.</p>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button onClick={() => navigate('/student')}>
+              Go to Home
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -293,8 +285,8 @@ export default function StudentProfile() {
 
         {/* Action Buttons */}
         <div className="flex justify-center gap-4">
-          <Button onClick={() => navigate('/student/dashboard')} variant="outline">
-            Back to Dashboard
+          <Button onClick={() => navigate('/student')} variant="outline">
+            Back to Home
           </Button>
         </div>
       </motion.div>

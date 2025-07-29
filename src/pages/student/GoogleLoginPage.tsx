@@ -76,7 +76,7 @@ export default function GoogleLoginPage() {
             
             toast({
               title: "Login Successful",
-              description: `Welcome, ${oauthResult.user.name}! Redirecting to dashboard...`,
+              description: `Welcome, ${oauthResult.user.name}! Redirecting to home...`,
             });
             
             // Clear URL hash and navigate

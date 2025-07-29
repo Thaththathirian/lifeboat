@@ -105,7 +105,7 @@ export function useOTP({ onSuccess, onError }: UseOTPProps = {}): UseOTPReturn {
         onSuccess?.(response.user);
         toast({
           title: "Login Successful",
-          description: "Welcome back! Redirecting to your dashboard...",
+          description: "Welcome back! Redirecting to your home...",
         });
         return true;
       } else {

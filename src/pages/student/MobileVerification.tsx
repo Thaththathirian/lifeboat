@@ -291,10 +291,10 @@ export default function MobileVerification() {
           
           toast({
             title: "Verification Successful",
-            description: `Welcome, ${googleUserData.name}! Redirecting to dashboard...`,
+            description: `Welcome, ${googleUserData.name}! Redirecting to home...`,
           });
           
-          // Navigate to student dashboard
+          // Navigate to student home
           navigate('/student');
         } else {
           throw new Error('Backend mobile verification failed');
