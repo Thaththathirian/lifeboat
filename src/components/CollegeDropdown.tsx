@@ -7,6 +7,7 @@ interface College {
   mobile: string;
   email: string;
   website: string;
+  address: string;
 }
 
 interface CollegeDropdownProps {

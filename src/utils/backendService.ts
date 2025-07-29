@@ -349,8 +349,7 @@ interface AcademicDetails {
   presentSemester: string;
   academicYear: string;
   collegeName: string;
-  collegePhone: string;
-  collegeEmail: string;
+  collegeAddress: string;
   collegeWebsite: string;
   referencePersonName: string;
   referencePersonQualification: string;
@@ -703,8 +702,7 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
         presentSemester: data.data.present_semester || data.data.presentSemester || '',
         academicYear: data.data.academic_year || data.data.academicYear || '',
         collegeName: data.data.college_name || data.data.collegeName || '',
-        collegePhone: data.data.college_phone || data.data.collegePhone || '',
-        collegeEmail: data.data.college_email || data.data.collegeEmail || '',
+        collegeAddress: data.data.college_address || data.data.collegeAddress || '',
         collegeWebsite: data.data.college_website || data.data.collegeWebsite || '',
         referencePersonName: data.data.reference_person_name || data.data.referencePersonName || '',
         referencePersonQualification: data.data.reference_person_qualification || data.data.referencePersonQualification || '',
@@ -764,8 +762,7 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
     formData.append('presentSemester', details.presentSemester);
     formData.append('academicYear', details.academicYear);
     formData.append('collegeName', details.collegeName);
-    formData.append('collegePhone', details.collegePhone);
-    formData.append('collegeEmail', details.collegeEmail);
+    formData.append('collegeAddress', details.collegeAddress);
     formData.append('collegeWebsite', details.collegeWebsite);
     formData.append('referencePersonName', details.referencePersonName);
     formData.append('referencePersonQualification', details.referencePersonQualification);

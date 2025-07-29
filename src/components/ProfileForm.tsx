@@ -62,8 +62,7 @@ export default function ProfileForm() {
     presentSemester: profile?.presentSemester || "",
     academicYear: profile?.academicYear || "",
     collegeName: profile?.collegeName || "",
-    collegePhone: profile?.collegePhone || "",
-    collegeEmail: profile?.collegeEmail || "",
+    collegeAddress: profile?.collegeAddress || "",
     collegeWebsite: profile?.collegeWebsite || "",
     referencePersonName: profile?.referencePersonName || "",
     referencePersonQualification: profile?.referencePersonQualification || "",
@@ -319,9 +318,8 @@ export default function ProfileForm() {
   const handleCollegeSelect = (college: any) => {
     setSelectedCollege(college);
     if (college) {
-      // Auto-fill college details when a college is selected
-      handleInputChange('collegePhone', college.mobile);
-      handleInputChange('collegeEmail', college.email);
+      // Auto-fill college address when a college is selected
+      handleInputChange('collegeAddress', college.address);
       handleInputChange('collegeWebsite', college.website);
     }
   };
@@ -376,7 +374,6 @@ export default function ProfileForm() {
           break;
         case 'mobile':
         case 'parentsPhone':
-        case 'collegePhone':
           // Filter out non-digits and limit to 10 digits
           validatedValue = value.replace(/\D/g, '').slice(0, 10);
           const mobileValidation = validateMobile(validatedValue, 
@@ -387,7 +384,6 @@ export default function ProfileForm() {
           }
           break;
         case 'email':
-        case 'collegeEmail':
           // Allow email characters but validate format
           const emailValidation = validateEmail(value, 
             field === 'email' ? 'Email Address' : 'College Email');
@@ -508,8 +504,7 @@ export default function ProfileForm() {
           presentSemester: updatedFormData.presentSemester,
           academicYear: updatedFormData.academicYear,
           collegeName: updatedFormData.collegeName,
-          collegePhone: updatedFormData.collegePhone,
-          collegeEmail: updatedFormData.collegeEmail,
+          collegeAddress: updatedFormData.collegeAddress,
           collegeWebsite: updatedFormData.collegeWebsite,
           referencePersonName: updatedFormData.referencePersonName,
           referencePersonQualification: updatedFormData.referencePersonQualification,
@@ -904,8 +899,7 @@ export default function ProfileForm() {
         presentSemester: formData.presentSemester,
         academicYear: formData.academicYear,
         collegeName: formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName,
-        collegePhone: formData.collegeName === 'other' ? otherCollegeData.collegePhone : formData.collegePhone,
-        collegeEmail: formData.collegeEmail,
+        collegeAddress: formData.collegeAddress,
         collegeWebsite: formData.collegeWebsite,
         referencePersonName: formData.referencePersonName,
         referencePersonQualification: formData.referencePersonQualification,
@@ -1580,39 +1574,26 @@ export default function ProfileForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">
-              College Phone
+              College Address
             </label>
             <Input 
-              placeholder="Enter college phone" 
-              value={formData.collegePhone}
-              onChange={(e) => handleInputChange('collegePhone', e.target.value)}
+              placeholder="Enter college address" 
+              value={formData.collegeAddress}
+              onChange={(e) => handleInputChange('collegeAddress', e.target.value)}
               disabled={isReadOnly}
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">
-              College Email
+              College Website
             </label>
             <Input 
-              type="email"
-              placeholder="Enter college email" 
-              value={formData.collegeEmail}
-              onChange={(e) => handleInputChange('collegeEmail', e.target.value)}
+              placeholder="Enter college website" 
+              value={formData.collegeWebsite}
+              onChange={(e) => handleInputChange('collegeWebsite', e.target.value)}
               disabled={isReadOnly}
             />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            College Website
-          </label>
-          <Input 
-            placeholder="Enter college website" 
-            value={formData.collegeWebsite}
-            onChange={(e) => handleInputChange('collegeWebsite', e.target.value)}
-            disabled={isReadOnly}
-          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

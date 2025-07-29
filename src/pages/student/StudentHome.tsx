@@ -479,6 +479,7 @@ export default function StudentHome() {
                       <div><b>College Name:</b> {profile?.collegeName || '-'}</div>
                       <div><b>College Phone:</b> {profile?.collegePhone || '-'}</div>
                       <div><b>College Email:</b> {profile?.collegeEmail || '-'}</div>
+                      <div><b>College Address:</b> {profile?.collegeAddress || '-'}</div>
                       <div><b>College Website:</b> {profile?.collegeWebsite || '-'}</div>
                       <div><b>Reference Person Name:</b> {profile?.referencePersonName || '-'}</div>
                       <div><b>Reference Qualification:</b> {profile?.referencePersonQualification || '-'}</div>

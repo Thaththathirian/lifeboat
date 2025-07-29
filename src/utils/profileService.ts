@@ -31,8 +31,7 @@ interface AcademicDetails {
   presentSemester: string;
   academicYear: string;
   collegeName: string;
-  collegePhone: string;
-  collegeEmail: string;
+  collegeAddress: string;
   collegeWebsite: string;
   referencePersonName: string;
   referencePersonQualification: string;
@@ -328,8 +327,7 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
       presentSemester: result.data.present_semester || result.data.presentSemester || '',
       academicYear: result.data.academic_year || result.data.academicYear || '',
       collegeName: result.data.college_name || result.data.collegeName || '',
-      collegePhone: result.data.college_phone || result.data.collegePhone || '',
-      collegeEmail: result.data.college_email || result.data.collegeEmail || '',
+      collegeAddress: result.data.college_address || result.data.collegeAddress || '',
       collegeWebsite: result.data.college_website || result.data.collegeWebsite || '',
       referencePersonName: result.data.reference_person_name || result.data.referencePersonName || '',
       referencePersonQualification: result.data.reference_person_qualification || result.data.referencePersonQualification || '',
