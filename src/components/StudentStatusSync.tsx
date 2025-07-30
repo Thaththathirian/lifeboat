@@ -18,10 +18,10 @@ export function StudentStatusSync() {
          case 0: // NEW_USER
            newStatus = 'mobile_verification_required';
            break;
-         case 1: // MOBILE_VERIFIED
+         case 1: // PROFILE_UPDATE_PENDING
            newStatus = 'profile_form_required';
            break;
-         case 2: // PROFILE_UPDATED
+         case 2: // PERSONAL_DOCUMENTS_PENDING
            newStatus = 'Profile Pending';
            break;
          case 3: // PERSONAL_DOCUMENTS_PENDING

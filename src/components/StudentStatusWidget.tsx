@@ -5,8 +5,8 @@ import { Settings } from "lucide-react";
 
 const statusOptions: { value: StudentStatus; label: string }[] = [
   { value: StudentStatus.NEW_USER, label: 'New User' },
-  { value: StudentStatus.MOBILE_VERIFIED, label: 'Mobile Verified' },
-  { value: StudentStatus.PROFILE_UPDATED, label: 'Profile Updated' },
+  { value: StudentStatus.PROFILE_UPDATE_PENDING, label: 'Profile Update Pending' },
+  { value: StudentStatus.PERSONAL_DOCUMENTS_PENDING, label: 'Personal Documents Pending' },
   { value: StudentStatus.PERSONAL_DOCUMENTS_PENDING, label: 'Personal Documents Pending' },
   { value: StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED, label: 'Personal Documents Submitted' },
   { value: StudentStatus.INTERVIEW_SCHEDULED, label: 'Interview Scheduled' },

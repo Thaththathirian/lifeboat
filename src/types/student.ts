@@ -1,20 +1,19 @@
 // Student status codes as defined in the backend
 export enum StudentStatus {
   NEW_USER = 0,
-  MOBILE_VERIFIED = 1,
-  PROFILE_UPDATED = 2,
-  PERSONAL_DOCUMENTS_PENDING = 3,
-  PERSONAL_DOCUMENTS_SUBMITTED = 4,
-  INTERVIEW_SCHEDULED = 5,
-  ACADEMIC_DOCUMENTS_PENDING = 6,
-  ACADEMIC_DOCUMENTS_SUBMITTED = 7,
-  ELIGIBLE_FOR_SCHOLARSHIP = 8,
-  PAYMENT_PENDING = 9,
-  PAID = 10,
-  PAYMENT_VERIFIED = 11,
-  RECEIPT_DOCUMENTS_SUBMITTED = 12,
-  ALUMNI = 13,
-  BLOCKED = 14,
+  PROFILE_UPDATE_PENDING = 1,
+  PERSONAL_DOCUMENTS_PENDING = 2,
+  PERSONAL_DOCUMENTS_SUBMITTED = 3,
+  INTERVIEW_SCHEDULED = 4,
+  ACADEMIC_DOCUMENTS_PENDING = 5,
+  ACADEMIC_DOCUMENTS_SUBMITTED = 6,
+  ELIGIBLE_FOR_SCHOLARSHIP = 7,
+  PAYMENT_PENDING = 8,
+  PAID = 9,
+  PAYMENT_VERIFIED = 10,
+  RECEIPT_DOCUMENTS_SUBMITTED = 11,
+  ALUMNI = 12,
+  BLOCKED = 13,
 }
 
 // Helper function to get status description
@@ -22,12 +21,10 @@ export const getStatusDescription = (status: number): string => {
   switch (status) {
     case StudentStatus.NEW_USER:
       return 'New User - Mobile verification required';
-    case StudentStatus.MOBILE_VERIFIED:
-      return 'Mobile Verified - Profile form required';
-    case StudentStatus.PROFILE_UPDATED:
-      return 'Profile Updated - Awaiting verification';
+    case StudentStatus.PROFILE_UPDATE_PENDING:
+      return 'Profile Update Pending - Profile form required';
     case StudentStatus.PERSONAL_DOCUMENTS_PENDING:
-      return 'Personal Documents Pending';
+      return 'Personal Documents Pending - Awaiting verification';
     case StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED:
       return 'Personal Documents Submitted';
     case StudentStatus.INTERVIEW_SCHEDULED:

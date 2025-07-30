@@ -266,20 +266,20 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
           return;
         }
         
-        if (studentStatus === StudentStatus.MOBILE_VERIFIED) {
-          // Status 1: User only updated OTP - always show form filling page
-          console.log('Status is MOBILE_VERIFIED (1), showing form filling page...');
+        if (studentStatus === StudentStatus.NEW_USER || studentStatus === StudentStatus.PROFILE_UPDATE_PENDING) {
+          // Status 0 or 1: User needs to fill profile form
+          console.log('Status is NEW_USER (0) or PROFILE_UPDATE_PENDING (1), showing form filling page...');
           const hasIncompleteSections = await checkIndividualSections();
           
-          // For status 1, always show the form filling page
+          // For status 0 or 1, always show the form filling page
           if (onIncompleteProfile) {
-            console.log('Status 1: Always showing form filling page');
+            console.log('Status 0 or 1: Always showing form filling page');
             onIncompleteProfile(hasIncompleteSections ? incompleteSections : []);
             return;
           }
-        } else if (studentStatus === StudentStatus.PROFILE_UPDATED) {
+        } else if (studentStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING) {
           // Status 2: User submitted profile - ONLY call get_submitted_profile
-          console.log('Status is PROFILE_UPDATED (2), fetching submitted profile...');
+          console.log('Status is PERSONAL_DOCUMENTS_PENDING (2), fetching submitted profile...');
           const data = await getSubmittedProfileData();
           
           if (data) {
@@ -304,9 +304,9 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
             setError('No submitted profile data found');
           }
         } else if (studentStatus === StudentStatus.NEW_USER) {
-          // Status 0: New user - needs mobile verification
-          console.log('Status is NEW_USER (0), user needs mobile verification');
-          setError('Mobile verification required. Please verify your mobile number to continue.');
+          // Status 0: New user - needs to fill profile
+          console.log('Status is NEW_USER (0), user needs to fill profile');
+          setError('Profile completion required. Please fill out your profile to continue.');
         } else {
           console.log('Status not handled:', studentStatus);
           setError('Status not supported');
@@ -320,15 +320,15 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
     };
 
     // Fetch data when API status is available and we're in a relevant status
-    if (currentApiStatus !== null && (currentApiStatus === StudentStatus.MOBILE_VERIFIED || currentApiStatus === StudentStatus.PROFILE_UPDATED)) {
+    if (currentApiStatus !== null && (currentApiStatus === StudentStatus.NEW_USER || currentApiStatus === StudentStatus.PROFILE_UPDATE_PENDING || currentApiStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING)) {
       fetchData();
     }
   }, [currentApiStatus, onIncompleteProfile, setStatus, checkIndividualSections, incompleteSections]);
 
-  // Only render when API status is PROFILE_UPDATED (2) or when we have submitted data
-  if (currentApiStatus !== StudentStatus.PROFILE_UPDATED && !submittedData) {
-    return null;
-  }
+      // Only render when API status is PERSONAL_DOCUMENTS_PENDING (2) or when we have submitted data
+    if (currentApiStatus !== StudentStatus.PERSONAL_DOCUMENTS_PENDING && !submittedData) {
+      return null;
+    }
 
   if (loading) {
     return (
@@ -339,9 +339,9 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
           </div>
           <CardTitle className="text-xl text-blue-600">Loading Profile Data</CardTitle>
           <p className="text-muted-foreground mt-2">
-            {currentApiStatus === StudentStatus.NEW_USER && "Checking mobile verification status..."}
-            {currentApiStatus === StudentStatus.MOBILE_VERIFIED && "Loading profile form..."}
-            {currentApiStatus === StudentStatus.PROFILE_UPDATED && "Loading submitted profile..."}
+            {currentApiStatus === StudentStatus.NEW_USER && "Loading profile form..."}
+            {currentApiStatus === StudentStatus.PROFILE_UPDATE_PENDING && "Loading profile form..."}
+            {currentApiStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING && "Loading submitted profile..."}
             {currentApiStatus === StudentStatus.INTERVIEW_SCHEDULED && "Loading interview details..."}
             {currentApiStatus === StudentStatus.DOCUMENT_UPLOADED && "Loading document status..."}
             {!currentApiStatus && "Checking your application status..."}

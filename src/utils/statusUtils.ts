@@ -6,6 +6,10 @@ import { STUDENT_STATUS_DISPLAY } from '@/constants/studentStatus';
  * @returns The display name for the status, or 'Unknown Status' if not found
  */
 export const getStatusDisplayName = (statusCode: number): string => {
+  // Special handling for NEW_USER status to show as "Profile Update Pending"
+  if (statusCode === 0) {
+    return 'Profile Update Pending';
+  }
   return STUDENT_STATUS_DISPLAY[statusCode as keyof typeof STUDENT_STATUS_DISPLAY] || 'Unknown Status';
 };
 

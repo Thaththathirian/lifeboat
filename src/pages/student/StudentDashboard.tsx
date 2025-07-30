@@ -97,7 +97,7 @@ export default function StudentHome() {
 
   // Type guard function to check if status is a profile-related status
   const isProfileStatus = (status: number): boolean => {
-    return status === StudentStatus.PROFILE_UPDATED;
+    return status === StudentStatus.PERSONAL_DOCUMENTS_PENDING;
   };
 
   // List of statuses where payment stats should be shown (start at 'Paid' and all later statuses)
@@ -127,9 +127,9 @@ export default function StudentHome() {
     console.log('Current status:', status);
     console.log('Current API status:', currentApiStatus);
     
-    // Handle status 1 (MOBILE_VERIFIED) - Show form application
-    if (currentApiStatus === StudentStatus.MOBILE_VERIFIED) {
-      console.log('Status is MOBILE_VERIFIED (1), showing form application...');
+    // Handle status 0 (NEW_USER) and status 1 (PROFILE_UPDATE_PENDING) - Show form application
+    if (currentApiStatus === StudentStatus.NEW_USER || currentApiStatus === StudentStatus.PROFILE_UPDATE_PENDING) {
+      console.log('Status is NEW_USER (0) or PROFILE_UPDATE_PENDING (1), showing form application...');
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
@@ -145,9 +145,9 @@ export default function StudentHome() {
       );
     }
     
-    // Handle status 2 (PROFILE_UPDATED) - Show completed form
-    if (currentApiStatus === StudentStatus.PROFILE_UPDATED) {
-      console.log('Status is PROFILE_UPDATED (2), showing completed form...');
+    // Handle status 2 (PERSONAL_DOCUMENTS_PENDING) - Show completed form
+    if (currentApiStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING) {
+      console.log('Status is PERSONAL_DOCUMENTS_PENDING (2), showing completed form...');
       return (
         <Card className="mb-6 border-l-4 border-l-green-500">
           <CardHeader className="text-center">
@@ -165,7 +165,7 @@ export default function StudentHome() {
 
     // Handle other statuses with existing logic
     // Always show form on home page if profile is not submitted or under verification
-    if (!profile?.submitted || status === StudentStatus.PROFILE_UPDATED) {
+    if (!profile?.submitted || status === StudentStatus.PERSONAL_DOCUMENTS_PENDING) {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
@@ -185,7 +185,7 @@ export default function StudentHome() {
     }
 
     // Profile pending verification status
-    if (status === StudentStatus.PROFILE_UPDATED) {
+    if (status === StudentStatus.PERSONAL_DOCUMENTS_PENDING) {
       console.log('Status is profile pending verification, showing verification pending card');
       return (
         <Card className="mb-6 border-l-4 border-l-yellow-500">
@@ -437,15 +437,15 @@ export default function StudentHome() {
         </div>
 
         {/* Profile Summary Card - Show when profile is submitted and verified */}
-        {(status === StudentStatus.PROFILE_UPDATED || status === StudentStatus.INTERVIEW_SCHEDULED || status === StudentStatus.PERSONAL_DOCUMENTS_PENDING || status === StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED || status === StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP || status === StudentStatus.PAYMENT_PENDING || status === StudentStatus.PAID || status === StudentStatus.ACADEMIC_DOCUMENTS_PENDING || status === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED || status === StudentStatus.ALUMNI) && profile?.submitted && (
+        {(status === StudentStatus.PERSONAL_DOCUMENTS_PENDING || status === StudentStatus.INTERVIEW_SCHEDULED || status === StudentStatus.PERSONAL_DOCUMENTS_PENDING || status === StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED || status === StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP || status === StudentStatus.PAYMENT_PENDING || status === StudentStatus.PAID || status === StudentStatus.ACADEMIC_DOCUMENTS_PENDING || status === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED || status === StudentStatus.ALUMNI) && profile?.submitted && (
           <div className="mb-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl">
-                  {status === StudentStatus.PROFILE_UPDATED ? 'Submitted Profile Summary (Pending Verification)' : 'Profile Summary'}
+                  {status === StudentStatus.PERSONAL_DOCUMENTS_PENDING ? 'Submitted Profile Summary (Pending Verification)' : 'Profile Summary'}
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  {status === StudentStatus.PROFILE_UPDATED 
+                  {status === StudentStatus.PERSONAL_DOCUMENTS_PENDING 
                     ? 'Your submitted profile details (read-only) - Awaiting admin verification'
                     : 'Your verified profile details (read-only)'
                   }
