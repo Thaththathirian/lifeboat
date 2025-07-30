@@ -72,7 +72,7 @@ export function StudentStatusProvider({ children }: { children: React.ReactNode 
       } else if (isPaymentCompleted) {
         newStatus = StudentStatus.PAID;
       } else if (isPaymentVerified) {
-        newStatus = StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED;
+        newStatus = StudentStatus.PAYMENT_VERIFIED;
       } else if (isReceiptVerified) {
         newStatus = StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED;
       } else if (isCertificateUploaded) {

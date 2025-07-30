@@ -82,7 +82,7 @@ export const useStudentStatusSync = (options: UseStudentStatusSyncOptions = {}) 
     isDocumentUploaded: currentStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING,
     isWaitingForPayment: currentStatus === StudentStatus.PAYMENT_PENDING,
     isPaymentCompleted: currentStatus === StudentStatus.PAID,
-    isPaymentVerified: currentStatus === StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED,
+    isPaymentVerified: currentStatus === StudentStatus.PAYMENT_VERIFIED,
     isReceiptVerified: currentStatus === StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED,
     isCertificateUploaded: currentStatus === StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED,
     isNextSemester: currentStatus === StudentStatus.ALUMNI,

@@ -48,13 +48,16 @@ export function StudentStatusSync() {
          case 10: // PAID
            newStatus = 'paid';
            break;
-         case 11: // RECEIPT_DOCUMENTS_SUBMITTED
+         case 11: // PAYMENT_VERIFIED
+           newStatus = 'payment_verified';
+           break;
+         case 12: // RECEIPT_DOCUMENTS_SUBMITTED
            newStatus = 'active';
            break;
-         case 12: // ALUMNI
+         case 13: // ALUMNI
            newStatus = 'alumni';
            break;
-         case 13: // BLOCKED
+         case 14: // BLOCKED
            newStatus = 'blocked';
            break;
          default:

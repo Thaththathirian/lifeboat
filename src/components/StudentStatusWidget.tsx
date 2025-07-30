@@ -15,6 +15,7 @@ const statusOptions: { value: StudentStatus; label: string }[] = [
   { value: StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP, label: 'Eligible for Scholarship' },
   { value: StudentStatus.PAYMENT_PENDING, label: 'Payment Pending' },
   { value: StudentStatus.PAID, label: 'Paid' },
+  { value: StudentStatus.PAYMENT_VERIFIED, label: 'Payment Verified' },
   { value: StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED, label: 'Receipt Documents Submitted' },
   { value: StudentStatus.ALUMNI, label: 'Alumni' },
   { value: StudentStatus.BLOCKED, label: 'Blocked' },

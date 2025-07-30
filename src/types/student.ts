@@ -11,9 +11,10 @@ export enum StudentStatus {
   ELIGIBLE_FOR_SCHOLARSHIP = 8,
   PAYMENT_PENDING = 9,
   PAID = 10,
-  RECEIPT_DOCUMENTS_SUBMITTED = 11,
-  ALUMNI = 12,
-  BLOCKED = 13,
+  PAYMENT_VERIFIED = 11,
+  RECEIPT_DOCUMENTS_SUBMITTED = 12,
+  ALUMNI = 13,
+  BLOCKED = 14,
 }
 
 // Helper function to get status description
@@ -41,6 +42,8 @@ export const getStatusDescription = (status: number): string => {
       return 'Payment Pending';
     case StudentStatus.PAID:
       return 'Paid';
+    case StudentStatus.PAYMENT_VERIFIED:
+      return 'Payment Verified';
     case StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED:
       return 'Receipt Documents Submitted';
     case StudentStatus.ALUMNI:
