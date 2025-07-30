@@ -336,12 +336,17 @@ interface PersonalDetails {
 
 interface FamilyDetails {
   fatherName: string;
-  fatherOccupation: string;
+  fatherOccupationType: string;
+  fatherOccupationDetails: string;
   motherName: string;
-  motherOccupation: string;
+  motherOccupationType: string;
+  motherOccupationDetails: string;
   parentsPhone: string;
+  parentsPhoneLandline: string;
   familyDetails: string;
   familyAnnualIncome: string;
+  numberOfSiblings: string;
+  aspirations: string;
 }
 
 interface AcademicDetails {
@@ -556,19 +561,24 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
 
     const data = await response.json();
     
-    // Map snake_case API response to camelCase form field names
-    if (data.data) {
-      const mappedData = {
-        fatherName: data.data.father_name || data.data.fatherName || '',
-        fatherOccupation: data.data.father_occupation || data.data.fatherOccupation || '',
-        motherName: data.data.mother_name || data.data.motherName || '',
-        motherOccupation: data.data.mother_occupation || data.data.motherOccupation || '',
-        parentsPhone: data.data.parents_phone || data.data.parentsPhone || '',
-        familyDetails: data.data.family_details || data.data.familyDetails || '',
-        familyAnnualIncome: data.data.family_annual_income || data.data.familyAnnualIncome || ''
-      };
-      return mappedData;
-    }
+          // Map snake_case API response to camelCase form field names
+      if (data.data) {
+        const mappedData = {
+          fatherName: data.data.father_name || data.data.fatherName || '',
+          fatherOccupationType: data.data.father_occupation_type || data.data.fatherOccupationType || '',
+          fatherOccupationDetails: data.data.father_occupation_details || data.data.fatherOccupationDetails || '',
+          motherName: data.data.mother_name || data.data.motherName || '',
+          motherOccupationType: data.data.mother_occupation_type || data.data.motherOccupationType || '',
+          motherOccupationDetails: data.data.mother_occupation_details || data.data.motherOccupationDetails || '',
+          parentsPhone: data.data.parents_phone || data.data.parentsPhone || '',
+          parentsPhoneLandline: data.data.parents_phone_landline || data.data.parentsPhoneLandline || '',
+          familyDetails: data.data.family_details || data.data.familyDetails || '',
+          familyAnnualIncome: data.data.family_annual_income || data.data.familyAnnualIncome || '',
+          numberOfSiblings: data.data.number_of_siblings || data.data.numberOfSiblings || '',
+          aspirations: data.data.aspirations || data.data.aspirations || ''
+        };
+        return mappedData;
+      }
     
     return null;
   } catch (error) {
@@ -596,12 +606,17 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
     
     // Add all family details fields
     formData.append('fatherName', details.fatherName);
-    formData.append('fatherOccupation', details.fatherOccupation);
+    formData.append('fatherOccupationType', details.fatherOccupationType);
+    formData.append('fatherOccupationDetails', details.fatherOccupationDetails);
     formData.append('motherName', details.motherName);
-    formData.append('motherOccupation', details.motherOccupation);
+    formData.append('motherOccupationType', details.motherOccupationType);
+    formData.append('motherOccupationDetails', details.motherOccupationDetails);
     formData.append('parentsPhone', details.parentsPhone);
+    formData.append('parentsPhoneLandline', details.parentsPhoneLandline);
     formData.append('familyDetails', details.familyDetails);
     formData.append('familyAnnualIncome', details.familyAnnualIncome);
+    formData.append('numberOfSiblings', details.numberOfSiblings);
+    formData.append('aspirations', details.aspirations);
     
     // Prepare headers (don't set Content-Type for FormData - browser will set it with boundary)
     const headers: Record<string, string> = {};

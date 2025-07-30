@@ -18,12 +18,17 @@ interface PersonalDetails {
 
 interface FamilyDetails {
   fatherName: string;
-  fatherOccupation: string;
+  fatherOccupationType: string;
+  fatherOccupationDetails: string;
   motherName: string;
-  motherOccupation: string;
+  motherOccupationType: string;
+  motherOccupationDetails: string;
   parentsPhone: string;
+  parentsPhoneLandline: string;
   familyDetails: string;
   familyAnnualIncome: string;
+  numberOfSiblings: string;
+  aspirations: string;
 }
 
 interface AcademicDetails {
@@ -248,12 +253,17 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
     // Map snake_case API response to camelCase form field names
     const mappedData = {
       fatherName: result.data.father_name || result.data.fatherName || '',
-      fatherOccupation: result.data.father_occupation || result.data.fatherOccupation || '',
+      fatherOccupationType: result.data.father_occupation_type || result.data.fatherOccupationType || '',
+      fatherOccupationDetails: result.data.father_occupation_details || result.data.fatherOccupationDetails || '',
       motherName: result.data.mother_name || result.data.motherName || '',
-      motherOccupation: result.data.mother_occupation || result.data.motherOccupation || '',
+      motherOccupationType: result.data.mother_occupation_type || result.data.motherOccupationType || '',
+      motherOccupationDetails: result.data.mother_occupation_details || result.data.motherOccupationDetails || '',
       parentsPhone: result.data.parents_phone || result.data.parentsPhone || '',
+      parentsPhoneLandline: result.data.parents_phone_landline || result.data.parentsPhoneLandline || '',
       familyDetails: result.data.family_details || result.data.familyDetails || '',
-      familyAnnualIncome: result.data.family_annual_income || result.data.familyAnnualIncome || ''
+      familyAnnualIncome: result.data.family_annual_income || result.data.familyAnnualIncome || '',
+      numberOfSiblings: result.data.number_of_siblings || result.data.numberOfSiblings || '',
+      aspirations: result.data.aspirations || result.data.aspirations || ''
     };
     
     cache.familyDetails = mappedData;

@@ -50,12 +50,17 @@ export default function ProfileForm() {
     
     // Family Details
     fatherName: profile?.fatherName || "",
-    fatherOccupation: profile?.fatherOccupation || "",
+    fatherOccupationType: profile?.fatherOccupationType || "",
+    fatherOccupationDetails: profile?.fatherOccupationDetails || "",
     motherName: profile?.motherName || "",
-    motherOccupation: profile?.motherOccupation || "",
+    motherOccupationType: profile?.motherOccupationType || "",
+    motherOccupationDetails: profile?.motherOccupationDetails || "",
     parentsPhone: profile?.parentsPhone || "",
+    parentsPhoneLandline: profile?.parentsPhoneLandline || "",
     familyDetails: profile?.familyDetails || "",
     familyAnnualIncome: profile?.familyAnnualIncome || "",
+    numberOfSiblings: profile?.numberOfSiblings || "",
+    aspirations: profile?.aspirations || "",
     
     // Academic Details
     grade: profile?.grade || "",
@@ -222,6 +227,13 @@ export default function ProfileForm() {
   };
 
   const handleNumberKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const char = String.fromCharCode(e.which);
+    if (!/\d/.test(char)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleSiblingsKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const char = String.fromCharCode(e.which);
     if (!/\d/.test(char)) {
       e.preventDefault();
@@ -489,12 +501,17 @@ export default function ProfileForm() {
         // Save family details
         const familyDetails = {
           fatherName: updatedFormData.fatherName,
-          fatherOccupation: updatedFormData.fatherOccupation,
+          fatherOccupationType: updatedFormData.fatherOccupationType,
+          fatherOccupationDetails: updatedFormData.fatherOccupationDetails,
           motherName: updatedFormData.motherName,
-          motherOccupation: updatedFormData.motherOccupation,
+          motherOccupationType: updatedFormData.motherOccupationType,
+          motherOccupationDetails: updatedFormData.motherOccupationDetails,
           parentsPhone: updatedFormData.parentsPhone,
+          parentsPhoneLandline: updatedFormData.parentsPhoneLandline,
           familyDetails: updatedFormData.familyDetails,
           familyAnnualIncome: updatedFormData.familyAnnualIncome,
+          numberOfSiblings: updatedFormData.numberOfSiblings,
+          aspirations: updatedFormData.aspirations,
         };
         await saveFamilyDetails(familyDetails);
       } else if (currentStep === 3) {
@@ -503,7 +520,7 @@ export default function ProfileForm() {
           grade: updatedFormData.grade,
           presentSemester: updatedFormData.presentSemester,
           academicYear: updatedFormData.academicYear,
-          collegeName: updatedFormData.collegeName,
+          collegeName: updatedFormData.collegeName === 'other' ? 'other' : updatedFormData.collegeName,
           collegeAddress: updatedFormData.collegeAddress,
           collegeWebsite: updatedFormData.collegeWebsite,
           referencePersonName: updatedFormData.referencePersonName,
@@ -526,8 +543,9 @@ export default function ProfileForm() {
           declaration: updatedFormData.declaration,
           arrears: updatedFormData.arrears,
           awareness: updatedFormData.awareness,
-          // Include bank details if "other" college is selected
+          // Include other college name and bank details if "other" college is selected
           ...(updatedFormData.collegeName === "other" && {
+            otherCollegeName: otherCollegeData.collegeName,
             collegeBankName: otherCollegeData.collegeBankName,
             accountNumber: otherCollegeData.accountNumber,
             confirmAccountNumber: otherCollegeData.confirmAccountNumber,
@@ -555,7 +573,7 @@ export default function ProfileForm() {
   const hasCurrentStepErrors = () => {
     const currentStepFields = {
       1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email'],
-      2: ['fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome'],
+      2: ['fatherName', 'fatherOccupation', 'fatherOccupationType', 'fatherOccupationDetails', 'motherName', 'motherOccupation', 'motherOccupationType', 'motherOccupationDetails', 'parentsPhone', 'parentsPhoneLandline', 'familyAnnualIncome', 'numberOfSiblings', 'aspirations'],
       3: ['grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness']
     };
     
@@ -574,9 +592,10 @@ export default function ProfileForm() {
   };
 
   const isFamilyDetailsValid = () => {
-    return formData.fatherName && formData.fatherOccupation && 
-           formData.motherName && formData.motherOccupation && 
-           formData.parentsPhone && formData.familyAnnualIncome &&
+    return formData.fatherName && formData.fatherOccupationType && formData.fatherOccupationDetails && 
+           formData.motherName && formData.motherOccupationType && formData.motherOccupationDetails && 
+           formData.parentsPhoneLandline && formData.familyAnnualIncome &&
+           formData.numberOfSiblings && formData.aspirations &&
            !hasCurrentStepErrors();
   };
 
@@ -588,9 +607,10 @@ export default function ProfileForm() {
                          formData.state && formData.pinCode && formData.mobile && formData.email;
     
     // Family Details
-    const familyValid = formData.fatherName && formData.fatherOccupation && 
-                       formData.motherName && formData.motherOccupation && 
-                       formData.parentsPhone && formData.familyAnnualIncome;
+    const familyValid = formData.fatherName && formData.fatherOccupationType && formData.fatherOccupationDetails && 
+                       formData.motherName && formData.motherOccupationType && formData.motherOccupationDetails && 
+                       formData.parentsPhoneLandline && formData.familyAnnualIncome &&
+                       formData.numberOfSiblings && formData.aspirations;
     
     // Academic Details - handle "Other" college case
     const effectiveCollegeName = formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName;
@@ -603,11 +623,11 @@ export default function ProfileForm() {
 
   // Check if there are any validation errors across all sections
   const hasAnyErrors = () => {
-    const allFields = [
-      'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email',
-      'fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome',
-      'grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness'
-    ];
+          const allFields = [
+        'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email',
+        'fatherName', 'fatherOccupationType', 'fatherOccupationDetails', 'motherName', 'motherOccupationType', 'motherOccupationDetails', 'parentsPhoneLandline', 'familyAnnualIncome', 'numberOfSiblings', 'aspirations',
+        'grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness'
+      ];
     return allFields.some(field => errors[field]);
   };
 
@@ -631,7 +651,7 @@ export default function ProfileForm() {
       // Trigger validation for all fields in current step
       const currentStepFields = {
         1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email'],
-        2: ['fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome'],
+        2: ['fatherName', 'fatherOccupationType', 'fatherOccupationDetails', 'motherName', 'motherOccupationType', 'motherOccupationDetails', 'parentsPhoneLandline', 'familyAnnualIncome', 'numberOfSiblings', 'aspirations'],
         3: ['grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness']
       };
       
@@ -709,12 +729,17 @@ export default function ProfileForm() {
           // Save family details
           const familyDetails = {
             fatherName: formData.fatherName,
-            fatherOccupation: formData.fatherOccupation,
+            fatherOccupationType: formData.fatherOccupationType,
+            fatherOccupationDetails: formData.fatherOccupationDetails,
             motherName: formData.motherName,
-            motherOccupation: formData.motherOccupation,
+            motherOccupationType: formData.motherOccupationType,
+            motherOccupationDetails: formData.motherOccupationDetails,
             parentsPhone: formData.parentsPhone,
+            parentsPhoneLandline: formData.parentsPhoneLandline,
             familyDetails: formData.familyDetails,
             familyAnnualIncome: formData.familyAnnualIncome,
+            numberOfSiblings: formData.numberOfSiblings,
+            aspirations: formData.aspirations,
           };
           saveResult = await saveFamilyDetails(familyDetails);
         }
@@ -801,11 +826,11 @@ export default function ProfileForm() {
     }
     
     // Trigger validation for all required fields
-    const allRequiredFields = [
-      'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email',
-      'fatherName', 'fatherOccupation', 'motherName', 'motherOccupation', 'parentsPhone', 'familyAnnualIncome',
-      'grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness'
-    ];
+          const allRequiredFields = [
+        'firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email',
+        'fatherName', 'fatherOccupationType', 'fatherOccupationDetails', 'motherName', 'motherOccupationType', 'motherOccupationDetails', 'parentsPhoneLandline', 'familyAnnualIncome', 'numberOfSiblings', 'aspirations',
+        'grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness'
+      ];
     
     // Validate each field and set errors
     allRequiredFields.forEach(field => {
@@ -898,7 +923,7 @@ export default function ProfileForm() {
         grade: formData.grade,
         presentSemester: formData.presentSemester,
         academicYear: formData.academicYear,
-        collegeName: formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName,
+        collegeName: formData.collegeName === 'other' ? 'other' : formData.collegeName,
         collegeAddress: formData.collegeAddress,
         collegeWebsite: formData.collegeWebsite,
         referencePersonName: formData.referencePersonName,
@@ -921,9 +946,10 @@ export default function ProfileForm() {
         declaration: formData.declaration,
         arrears: formData.arrears,
         awareness: formData.awareness,
-        // Add these fields if collegeName is 'other'
+        // Add other college name and bank details if collegeName is 'other'
         ...(formData.collegeName === 'other' && {
-          bankName: otherCollegeData.collegeBankName, // map to bankName
+          otherCollegeName: otherCollegeData.collegeName,
+          bankName: otherCollegeData.collegeBankName,
           accountNumber: otherCollegeData.accountNumber,
           confirmAccountNumber: otherCollegeData.confirmAccountNumber,
           ifscCode: otherCollegeData.ifscCode
@@ -1378,10 +1404,10 @@ export default function ProfileForm() {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div>
-              <label className="block text-sm font-medium mb-2">
-                Father's Name <span className="text-red-500">*</span>
-              </label>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Father's Name <span className="text-red-500">*</span>
+            </label>
             <Input 
               placeholder="Enter father's name" 
               value={formData.fatherName}
@@ -1394,28 +1420,48 @@ export default function ProfileForm() {
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.fatherName}</p>
             )}
           </div>
-                      <div>
-              <label className="block text-sm font-medium mb-2">
-                Father's Occupation
-              </label>
-            <Input 
-              placeholder="Enter father's occupation" 
-              value={formData.fatherOccupation}
-              onChange={(e) => handleInputChange('fatherOccupation', e.target.value)}
-              disabled={isReadOnly}
-              className={getInputStyling('fatherOccupation').className}
-            />
-            {errors.fatherOccupation && (
-              <p className="text-red-500 text-xs mt-1 font-medium">{errors.fatherOccupation}</p>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Father's Occupation Type <span className="text-red-500">*</span>
+            </label>
+            <Select value={formData.fatherOccupationType} onValueChange={(value) => handleInputChange('fatherOccupationType', value)} disabled={isReadOnly}>
+              <SelectTrigger className={getInputStyling('fatherOccupationType').className}>
+                <SelectValue placeholder="Select occupation type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="business">Business</SelectItem>
+                <SelectItem value="employed">Employed</SelectItem>
+                <SelectItem value="daily_labour">Daily Labour</SelectItem>
+                <SelectItem value="late">Late</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.fatherOccupationType && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.fatherOccupationType}</p>
             )}
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Father's Occupation Details <span className="text-red-500">*</span>
+          </label>
+          <Input 
+            placeholder="Example: Taxi Driver, Rickshaw puller" 
+            value={formData.fatherOccupationDetails}
+            onChange={(e) => handleInputChange('fatherOccupationDetails', e.target.value)}
+            disabled={isReadOnly}
+            className={getInputStyling('fatherOccupationDetails').className}
+          />
+          {errors.fatherOccupationDetails && (
+            <p className="text-red-500 text-xs mt-1 font-medium">{errors.fatherOccupationDetails}</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div>
-              <label className="block text-sm font-medium mb-2">
-                Mother's Name <span className="text-red-500">*</span>
-              </label>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Mother's Name <span className="text-red-500">*</span>
+            </label>
             <Input 
               placeholder="Enter mother's name" 
               value={formData.motherName}
@@ -1427,44 +1473,63 @@ export default function ProfileForm() {
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.motherName}</p>
             )}
           </div>
-                      <div>
-              <label className="block text-sm font-medium mb-2">
-                Mother's Occupation
-              </label>
-            <Input 
-              placeholder="Enter mother's occupation" 
-              value={formData.motherOccupation}
-              onChange={(e) => handleInputChange('motherOccupation', e.target.value)}
-              disabled={isReadOnly}
-              className={getInputStyling('motherOccupation').className}
-            />
-            {errors.motherOccupation && (
-              <p className="text-red-500 text-xs mt-1 font-medium">{errors.motherOccupation}</p>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Mother's Occupation Type <span className="text-red-500">*</span>
+            </label>
+            <Select value={formData.motherOccupationType} onValueChange={(value) => handleInputChange('motherOccupationType', value)} disabled={isReadOnly}>
+              <SelectTrigger className={getInputStyling('motherOccupationType').className}>
+                <SelectValue placeholder="Select occupation type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="business">Business</SelectItem>
+                <SelectItem value="employed">Employed</SelectItem>
+                <SelectItem value="daily_labour">Daily Labour</SelectItem>
+                <SelectItem value="late">Late</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.motherOccupationType && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.motherOccupationType}</p>
             )}
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Mother's Occupation Details <span className="text-red-500">*</span>
+          </label>
+          <Input 
+            placeholder="Example: Tailor, Domestic Helper" 
+            value={formData.motherOccupationDetails}
+            onChange={(e) => handleInputChange('motherOccupationDetails', e.target.value)}
+            disabled={isReadOnly}
+            className={getInputStyling('motherOccupationDetails').className}
+          />
+          {errors.motherOccupationDetails && (
+            <p className="text-red-500 text-xs mt-1 font-medium">{errors.motherOccupationDetails}</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div>
-              <label className="block text-sm font-medium mb-2">
-                Parents' Phone Number <span className="text-red-500">*</span>
-              </label>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Parents' Phone/Landline <span className="text-red-500">*</span>
+            </label>
             <Input 
-              placeholder="Enter parents' phone number" 
-              value={formData.parentsPhone}
-              onChange={(e) => handleInputChange('parentsPhone', e.target.value)}
-              onKeyPress={handleMobileKeyPress}
+              placeholder="Example: 9841012345/044 55555555" 
+              value={formData.parentsPhoneLandline}
+              onChange={(e) => handleInputChange('parentsPhoneLandline', e.target.value)}
               disabled={isReadOnly}
-              className={getInputStyling('parentsPhone').className}
+              className={getInputStyling('parentsPhoneLandline').className}
             />
-            {errors.parentsPhone && (
-              <p className="text-red-500 text-xs mt-1 font-medium">{errors.parentsPhone}</p>
+            {errors.parentsPhoneLandline && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.parentsPhoneLandline}</p>
             )}
           </div>
-                      <div>
-              <label className="block text-sm font-medium mb-2">
-                Family Annual Income <span className="text-red-500">*</span>
-              </label>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Family Annual Income <span className="text-red-500">*</span>
+            </label>
             <Input 
               placeholder="Enter annual income" 
               value={formData.familyAnnualIncome}
@@ -1479,17 +1544,56 @@ export default function ProfileForm() {
           </div>
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Number of Siblings <span className="text-red-500">*</span>
+            </label>
+            <Input 
+              placeholder="Enter number only" 
+              value={formData.numberOfSiblings}
+              onChange={(e) => handleInputChange('numberOfSiblings', e.target.value)}
+              onKeyPress={handleSiblingsKeyPress}
+              disabled={isReadOnly}
+              className={getInputStyling('numberOfSiblings').className}
+            />
+            {errors.numberOfSiblings && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.numberOfSiblings}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Sibling Details
+            </label>
+            <Input 
+              placeholder="Example: 1 Younger brother-Studying School, 1 Elder Sister- Married" 
+              value={formData.familyDetails}
+              onChange={(e) => handleInputChange('familyDetails', e.target.value)}
+              disabled={isReadOnly}
+              className={getInputStyling('familyDetails').className}
+            />
+            {errors.familyDetails && (
+              <p className="text-red-500 text-xs mt-1 font-medium">{errors.familyDetails}</p>
+            )}
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-2">
-            Family Details
+            Aspirations <span className="text-red-500">*</span>
           </label>
           <Input 
-            placeholder="Example: 1 Younger brother-Studying School, 1 Elder Sister- Married" 
-            value={formData.familyDetails}
-            onChange={(e) => handleInputChange('familyDetails', e.target.value)}
+            placeholder="Enter your career aspirations" 
+            value={formData.aspirations}
+            onChange={(e) => handleInputChange('aspirations', e.target.value)}
             disabled={isReadOnly}
+            className={getInputStyling('aspirations').className}
           />
+          {errors.aspirations && (
+            <p className="text-red-500 text-xs mt-1 font-medium">{errors.aspirations}</p>
+          )}
         </div>
+
       </CardContent>
     </Card>
   );
@@ -1599,7 +1703,7 @@ export default function ProfileForm() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">
-              Reference Person Name
+              Institution Reference Person Name
             </label>
             <Input 
               placeholder="Enter reference person name" 

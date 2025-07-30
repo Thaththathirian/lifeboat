@@ -69,12 +69,17 @@ interface PersonalDetails {
 
 interface FamilyDetails {
   fatherName: string;
-  fatherOccupation: string;
+  fatherOccupationType: string;
+  fatherOccupationDetails: string;
   motherName: string;
-  motherOccupation: string;
+  motherOccupationType: string;
+  motherOccupationDetails: string;
   parentsPhone: string;
+  parentsPhoneLandline: string;
   familyDetails: string;
   familyAnnualIncome: string;
+  numberOfSiblings: string;
+  aspirations: string;
 }
 
 interface AcademicDetails {
