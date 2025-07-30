@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useStudent } from "@/contexts/StudentContext";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { useToast } from "@/hooks/use-toast";
+import { STUDENT_STATUS } from "@/constants/studentStatus";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1020,7 +1021,7 @@ export default function ProfileForm() {
       setProfile(submittedProfile);
       
       // Update status to profile pending verification
-      setStatus('profile pending verification');
+      setStatus(STUDENT_STATUS.PROFILE_UPDATED as any);
       
       // Clear profile cache after successful submission
       clearProfileCache();
@@ -1049,7 +1050,7 @@ export default function ProfileForm() {
 
   // Check if profile is submitted but not yet approved
   const isSubmitted = profile?.submitted;
-  const isReadOnly = isSubmitted && profile?.status !== 'approved';
+  const isReadOnly = isSubmitted && profile?.status !== STUDENT_STATUS.PROFILE_UPDATED;
 
   // Progress calculation
   const progress = (currentStep / 3) * 100;

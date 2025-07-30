@@ -14,6 +14,7 @@ import { StudentStatus } from '@/types/student';
 import { useToast } from "@/hooks/use-toast";
 import ProfileForm from "@/components/ProfileForm";
 import SubmittedProfileDisplay from "@/components/SubmittedProfileDisplay";
+import { getStatusDisplayNameSafe } from "@/utils/statusUtils";
 
 function ApplyForNextModal({ open, onClose }: { open: boolean, onClose: () => void }) {
   const [form, setForm] = useState({
@@ -95,8 +96,8 @@ export default function StudentHome() {
   };
 
   // Type guard function to check if status is a profile-related status
-  const isProfileStatus = (status: string): boolean => {
-    return status === 'Profile Pending' || status === 'Profile Under Verification';
+  const isProfileStatus = (status: number): boolean => {
+    return status === StudentStatus.PROFILE_UPDATED;
   };
 
   // List of statuses where payment stats should be shown (start at 'Paid' and all later statuses)
@@ -164,7 +165,7 @@ export default function StudentHome() {
 
     // Handle other statuses with existing logic
     // Always show form on home page if profile is not submitted or under verification
-    if (!profile?.submitted || status === 'Profile Pending' || status === 'Profile Under Verification') {
+    if (!profile?.submitted || status === StudentStatus.PROFILE_UPDATED) {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
@@ -184,7 +185,7 @@ export default function StudentHome() {
     }
 
     // Profile pending verification status
-    if (status === 'profile pending verification') {
+    if (status === StudentStatus.PROFILE_UPDATED) {
       console.log('Status is profile pending verification, showing verification pending card');
       return (
         <Card className="mb-6 border-l-4 border-l-yellow-500">
@@ -202,7 +203,7 @@ export default function StudentHome() {
 
 
     // Schedule Interview status
-    if (status === 'Schedule Interview' || status === 'interview') {
+    if (status === StudentStatus.INTERVIEW_SCHEDULED) {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
@@ -256,7 +257,7 @@ export default function StudentHome() {
     }
 
     // Documents pending status
-    if (status === 'documents' || status === 'Documents pending') {
+    if (status === StudentStatus.PERSONAL_DOCUMENTS_PENDING || status === StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED) {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
@@ -286,7 +287,7 @@ export default function StudentHome() {
     }
 
     // Documents verification pending
-    if (status === 'documents_submitted' || status === 'documents verification pending') {
+    if (status === StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED) {
       return (
         <Card className="mb-6 border-l-4 border-l-yellow-500">
           <CardHeader className="text-center">
@@ -306,7 +307,7 @@ export default function StudentHome() {
     }
 
     // Eligible for scholarship
-    if (status === 'eligible_scholarship') {
+    if (status === StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP) {
       return (
         <Card className="mb-6 border-l-4 border-l-green-500">
           <CardHeader className="text-center">
@@ -318,7 +319,7 @@ export default function StudentHome() {
     }
 
     // Payment pending/paid
-    if (status === 'payment' || status === 'paid') {
+    if (status === StudentStatus.PAYMENT_PENDING || status === StudentStatus.PAID) {
       return (
         <Card className="mb-6 border-l-4 border-l-green-500">
           <CardHeader className="text-center">
@@ -337,7 +338,7 @@ export default function StudentHome() {
     }
 
     // Academic documents pending (merged with results pending)
-    if (status === 'academic_documents_pending' || status === 'academic_results_pending') {
+    if (status === StudentStatus.ACADEMIC_DOCUMENTS_PENDING || status === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED) {
       return (
         <Card className="mb-6 border-l-4 border-l-blue-500">
           <CardHeader className="text-center">
@@ -354,7 +355,7 @@ export default function StudentHome() {
     }
 
     // Alumni status
-    if (status === 'alumni') {
+    if (status === StudentStatus.ALUMNI) {
       return (
         <Card className="mb-6 border-l-4 border-l-green-500">
           <CardHeader className="text-center">
@@ -423,7 +424,7 @@ export default function StudentHome() {
                   <p className="text-muted-foreground">Current progress of your scholarship application</p>
                 </div>
                 <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {status}
+                  {getStatusDisplayNameSafe(status)}
                 </Badge>
               </div>
             </CardContent>
@@ -436,15 +437,15 @@ export default function StudentHome() {
         </div>
 
         {/* Profile Summary Card - Show when profile is submitted and verified */}
-        {(status === 'profile pending verification' || status === 'Schedule Interview' || status === 'interview' || status === 'documents' || status === 'Documents pending' || status === 'documents_submitted' || status === 'documents verification pending' || status === 'eligible_scholarship' || status === 'payment' || status === 'paid' || status === 'academic_documents_pending' || status === 'academic_documents_submitted' || status === 'academic_results_pending' || status === 'academic_verification_pending' || status === 'apply_next' || status === 'alumni' || status === 'Future Ready Module') && profile?.submitted && (
+        {(status === StudentStatus.PROFILE_UPDATED || status === StudentStatus.INTERVIEW_SCHEDULED || status === StudentStatus.PERSONAL_DOCUMENTS_PENDING || status === StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED || status === StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP || status === StudentStatus.PAYMENT_PENDING || status === StudentStatus.PAID || status === StudentStatus.ACADEMIC_DOCUMENTS_PENDING || status === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED || status === StudentStatus.ALUMNI) && profile?.submitted && (
           <div className="mb-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-xl">
-                  {status === 'profile pending verification' ? 'Submitted Profile Summary (Pending Verification)' : 'Profile Summary'}
+                  {status === StudentStatus.PROFILE_UPDATED ? 'Submitted Profile Summary (Pending Verification)' : 'Profile Summary'}
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  {status === 'profile pending verification' 
+                  {status === StudentStatus.PROFILE_UPDATED 
                     ? 'Your submitted profile details (read-only) - Awaiting admin verification'
                     : 'Your verified profile details (read-only)'
                   }

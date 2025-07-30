@@ -7,6 +7,7 @@ import { getSubmittedProfileData, getPersonalDetails, getFamilyDetails, getAcade
 import { StudentStatus } from "@/types/student";
 import { Loader2 } from "lucide-react";
 import { useStudentStatus } from "@/components/layout/StudentStatusProvider";
+import { getStatusDisplayNameSafe } from "@/utils/statusUtils";
 
 interface Mark {
   exam_name: string;

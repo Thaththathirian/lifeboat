@@ -1,25 +1,23 @@
 import { useState } from "react";
-import { useStudent, StudentStatus } from "@/contexts/StudentContext";
+import { useStudent } from "@/contexts/StudentContext";
+import { StudentStatus } from "@/types/student";
 import { Settings } from "lucide-react";
 
 const statusOptions: { value: StudentStatus; label: string }[] = [
-  { value: 'Profile Pending', label: 'Profile Pending' },
-  { value: 'Profile Under Verification', label: 'Profile Under Verification' },
-  { value: 'Schedule Interview', label: 'Schedule Interview' },
-  { value: 'documents', label: 'Scholarship Documents Pending' },
-  { value: 'documents_submitted', label: 'Application form submitted' },
-  { value: 'interview', label: 'Schedule Interview' },
-  { value: 'academic_documents_pending', label: 'Academic Documents Pending' },
-  { value: 'academic_documents_submitted', label: 'Academic Documents Submitted' },
-  { value: 'eligible_scholarship', label: 'Eligible for Scholarship' },
-  { value: 'payment', label: 'Payment Pending' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'academic_results_pending', label: 'Academic results pending' },
-  { value: 'academic_verification_pending', label: 'Academic verification pending' },
-  { value: 'apply_next', label: 'Apply for Next' },
-  { value: 'alumni', label: 'Alumni' },
-  { value: 'Future Ready Module', label: 'Future Ready Module' },
-  { value: 'blocked', label: 'Blocked' },
+  { value: StudentStatus.NEW_USER, label: 'New User' },
+  { value: StudentStatus.MOBILE_VERIFIED, label: 'Mobile Verified' },
+  { value: StudentStatus.PROFILE_UPDATED, label: 'Profile Updated' },
+  { value: StudentStatus.PERSONAL_DOCUMENTS_PENDING, label: 'Personal Documents Pending' },
+  { value: StudentStatus.PERSONAL_DOCUMENTS_SUBMITTED, label: 'Personal Documents Submitted' },
+  { value: StudentStatus.INTERVIEW_SCHEDULED, label: 'Interview Scheduled' },
+  { value: StudentStatus.ACADEMIC_DOCUMENTS_PENDING, label: 'Academic Documents Pending' },
+  { value: StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED, label: 'Academic Documents Submitted' },
+  { value: StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP, label: 'Eligible for Scholarship' },
+  { value: StudentStatus.PAYMENT_PENDING, label: 'Payment Pending' },
+  { value: StudentStatus.PAID, label: 'Paid' },
+  { value: StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED, label: 'Receipt Documents Submitted' },
+  { value: StudentStatus.ALUMNI, label: 'Alumni' },
+  { value: StudentStatus.BLOCKED, label: 'Blocked' },
 ];
 
 export default function StudentStatusWidget({ devOnly = false }: { devOnly?: boolean }) {

@@ -3,11 +3,11 @@ import { useStudentStatusSync } from '@/hooks/useStudentStatusSync';
 import { StudentStatus, getStatusDescription } from '@/types/student';
 
 const STATUS_KEY = 'studentStatus';
-const defaultStatus = 'Profile Pending';
+const defaultStatus = StudentStatus.PROFILE_UPDATED;
 
 export const StudentStatusContext = createContext({
   status: defaultStatus,
-  setStatus: (s: string) => {},
+  setStatus: (s: number) => {},
   currentApiStatus: null as number | null,
   syncStatus: () => {},
   loading: false,
@@ -20,7 +20,14 @@ export function useStudentStatus() {
 
 export function StudentStatusProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState(() => {
-    return localStorage.getItem(STATUS_KEY) || defaultStatus;
+    const storedStatus = localStorage.getItem(STATUS_KEY);
+    if (storedStatus) {
+      const statusNumber = parseInt(storedStatus);
+      if (!isNaN(statusNumber)) {
+        return statusNumber;
+      }
+    }
+    return defaultStatus;
   });
 
   // Use the status sync hook
@@ -51,31 +58,31 @@ export function StudentStatusProvider({ children }: { children: React.ReactNode 
       let newStatus = defaultStatus;
       
       if (isNewUser) {
-        newStatus = 'mobile_verification_required';
+        newStatus = StudentStatus.NEW_USER;
       } else if (isMobileVerified) {
-        newStatus = 'profile_form_required';
+        newStatus = StudentStatus.MOBILE_VERIFIED;
       } else if (isProfileUpdated) {
-        newStatus = 'Profile Pending';
+        newStatus = StudentStatus.PROFILE_UPDATED;
       } else if (isInterviewScheduled) {
-        newStatus = 'Schedule Interview';
+        newStatus = StudentStatus.INTERVIEW_SCHEDULED;
       } else if (isDocumentUploaded) {
-        newStatus = 'Documents pending';
+        newStatus = StudentStatus.PERSONAL_DOCUMENTS_PENDING;
       } else if (isWaitingForPayment) {
-        newStatus = 'payment';
+        newStatus = StudentStatus.PAYMENT_PENDING;
       } else if (isPaymentCompleted) {
-        newStatus = 'paid';
+        newStatus = StudentStatus.PAID;
       } else if (isPaymentVerified) {
-        newStatus = 'active';
+        newStatus = StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED;
       } else if (isReceiptVerified) {
-        newStatus = 'active';
+        newStatus = StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED;
       } else if (isCertificateUploaded) {
-        newStatus = 'active';
+        newStatus = StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED;
       } else if (isNextSemester) {
-        newStatus = 'apply_next';
+        newStatus = StudentStatus.ALUMNI;
       } else if (isAlumni) {
-        newStatus = 'alumni';
+        newStatus = StudentStatus.ALUMNI;
       } else if (isBlocked) {
-        newStatus = 'blocked';
+        newStatus = StudentStatus.BLOCKED;
       }
       
       console.log('Mapped API status to UI status:', apiStatus, '->', newStatus);
@@ -87,7 +94,7 @@ export function StudentStatusProvider({ children }: { children: React.ReactNode 
   });
 
   useEffect(() => {
-    localStorage.setItem(STATUS_KEY, status);
+    localStorage.setItem(STATUS_KEY, status.toString());
   }, [status]);
 
   return (

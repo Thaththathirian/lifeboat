@@ -14,45 +14,52 @@ export function StudentStatusSync() {
       // Map API status to UI status
       let newStatus = 'Profile Pending';
       
-      switch (apiStatus) {
-        case 0: // NEW_USER
-          newStatus = 'mobile_verification_required';
-          break;
-        case 1: // MOBILE_VERIFIED
-          newStatus = 'profile_form_required';
-          break;
-        case 2: // PROFILE_UPDATED
-          newStatus = 'Profile Pending';
-          break;
-        case 3: // INTERVIEW_SCHEDULED
-          newStatus = 'Schedule Interview';
-          break;
-        case 4: // DOCUMENT_UPLOADED
-          newStatus = 'Documents pending';
-          break;
-        case 5: // WAITING_FOR_PAYMENT
-          newStatus = 'payment';
-          break;
-        case 6: // PAYMENT_COMPLETED
-          newStatus = 'paid';
-          break;
-        case 7: // PAYMENT_VERIFIED
-        case 8: // RECEIPT_VERIFIED
-        case 9: // CERTIFICATE_UPLOADED
-          newStatus = 'active';
-          break;
-        case 10: // NEXT_SEMESTER
-          newStatus = 'apply_next';
-          break;
-        case 11: // ALUMNI
-          newStatus = 'alumni';
-          break;
-        case 12: // BLOCKED
-          newStatus = 'blocked';
-          break;
-        default:
-          newStatus = 'Profile Pending';
-      }
+             switch (apiStatus) {
+         case 0: // NEW_USER
+           newStatus = 'mobile_verification_required';
+           break;
+         case 1: // MOBILE_VERIFIED
+           newStatus = 'profile_form_required';
+           break;
+         case 2: // PROFILE_UPDATED
+           newStatus = 'Profile Pending';
+           break;
+         case 3: // PERSONAL_DOCUMENTS_PENDING
+           newStatus = 'Documents pending';
+           break;
+         case 4: // PERSONAL_DOCUMENTS_SUBMITTED
+           newStatus = 'Documents submitted';
+           break;
+         case 5: // INTERVIEW_SCHEDULED
+           newStatus = 'Schedule Interview';
+           break;
+         case 6: // ACADEMIC_DOCUMENTS_PENDING
+           newStatus = 'Academic documents pending';
+           break;
+         case 7: // ACADEMIC_DOCUMENTS_SUBMITTED
+           newStatus = 'Academic documents submitted';
+           break;
+         case 8: // ELIGIBLE_FOR_SCHOLARSHIP
+           newStatus = 'eligible_scholarship';
+           break;
+         case 9: // PAYMENT_PENDING
+           newStatus = 'payment';
+           break;
+         case 10: // PAID
+           newStatus = 'paid';
+           break;
+         case 11: // RECEIPT_DOCUMENTS_SUBMITTED
+           newStatus = 'active';
+           break;
+         case 12: // ALUMNI
+           newStatus = 'alumni';
+           break;
+         case 13: // BLOCKED
+           newStatus = 'blocked';
+           break;
+         default:
+           newStatus = 'Profile Pending';
+       }
       
       console.log('Mapped API status to UI status:', apiStatus, '->', newStatus);
       setStatus(newStatus);

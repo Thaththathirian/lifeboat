@@ -1,30 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { STUDENT_STATUS, STUDENT_STATUS_DISPLAY, StudentStatusType } from '../constants/studentStatus';
 
-export type StudentStatus = 
-  | 'login'
-  | 'Profile Pending'
-  | 'Profile Under Verification'
-  | 'profile pending verification'
-  | 'Schedule Interview'
-  | 'interview'
-  | 'documents'
-  | 'Documents pending'
-  | 'documents_submitted'
-  | 'documents verification pending'
-  | 'review'
-  | 'approved'
-  | 'eligible_scholarship'
-  | 'payment'
-  | 'paid'
-  | 'active'
-  | 'academic_documents_pending'
-  | 'academic_documents_submitted'
-  | 'academic_results_pending'
-  | 'academic_verification_pending'
-  | 'apply_next'
-  | 'alumni'
-  | 'Future Ready Module'
-  | 'blocked';
+export type StudentStatus = StudentStatusType;
 
 interface StudentContextType {
   status: StudentStatus;
@@ -41,7 +18,14 @@ const StudentContext = createContext<StudentContextType | undefined>(undefined);
 
 export function StudentProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<StudentStatus>(() => {
-    return (localStorage.getItem('student_status') as StudentStatus) || 'Profile Pending';
+    const storedStatus = localStorage.getItem('student_status');
+    if (storedStatus) {
+      const statusNumber = parseInt(storedStatus);
+      if (!isNaN(statusNumber)) {
+        return statusNumber as StudentStatus;
+      }
+    }
+    return STUDENT_STATUS.NEW_USER;
   });
   const [profile, setProfile] = useState(() => {
     const stored = localStorage.getItem('student_profile');
@@ -57,7 +41,7 @@ export function StudentProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    localStorage.setItem('student_status', status);
+    localStorage.setItem('student_status', status.toString());
   }, [status]);
   useEffect(() => {
     localStorage.setItem('student_profile', JSON.stringify(profile));
