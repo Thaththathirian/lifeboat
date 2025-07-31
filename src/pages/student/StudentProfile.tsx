@@ -29,11 +29,11 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="flex flex-col items-center w-full min-h-[calc(100vh-4rem)] py-4 sm:py-6 md:py-8 px-2 sm:px-4">
+    <div className="flex flex-col items-center min-h-[calc(100vh-4rem)] py-4 sm:py-6 md:py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-4xl space-y-6"
+        className="w-full space-y-6"
       >
         {/* Header */}
         <Card>

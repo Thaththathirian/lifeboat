@@ -7,7 +7,7 @@ import { getSubmittedProfileData, getPersonalDetails, getFamilyDetails, getAcade
 import { StudentStatus } from "@/types/student";
 import { Loader2 } from "lucide-react";
 import { useStudentStatus } from "@/components/layout/StudentStatusProvider";
-import { getStatusDisplayNameSafe } from "@/utils/statusUtils";
+
 
 interface Mark {
   exam_name: string;
@@ -344,7 +344,7 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
             {currentApiStatus === StudentStatus.PERSONAL_DETAILS_SUBMITTED && "Loading submitted profile..."}
             {currentApiStatus === StudentStatus.INTERVIEW_SCHEDULED && "Loading interview details..."}
             {currentApiStatus === StudentStatus.DOCUMENT_UPLOADED && "Loading document status..."}
-            {!currentApiStatus && "Checking your application status..."}
+            {!currentApiStatus && "Loading..."}
           </p>
         </CardHeader>
       </Card>

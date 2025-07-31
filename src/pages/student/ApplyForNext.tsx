@@ -28,7 +28,7 @@ export default function ApplyForNext() {
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-center w-full min-h-[calc(100vh-4rem)] py-8 px-2">
+      <div className="flex flex-col items-center min-h-[calc(100vh-4rem)] py-8">
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 text-center">
           <div className="font-bold text-lg mb-4 text-green-700">Application Submitted!</div>
           <div className="mb-4 text-gray-700">Your application for the next semester has been submitted successfully. You will be notified once it is reviewed.</div>
@@ -39,7 +39,7 @@ export default function ApplyForNext() {
   }
 
   return (
-    <div className="flex flex-col items-center w-full min-h-[calc(100vh-4rem)] py-8 px-2">
+    <div className="flex flex-col items-center min-h-[calc(100vh-4rem)] py-8">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <div className="font-bold text-lg mb-4">Apply for Next</div>
         <form className="space-y-4" onSubmit={e => { e.preventDefault(); if (isValid) setSubmitted(true); }}>

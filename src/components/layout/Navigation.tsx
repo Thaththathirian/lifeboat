@@ -29,7 +29,7 @@ import {
   LogOut
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useStudentStatus } from "./StudentStatusProvider";
+
 
 interface NavigationProps {
   userType: 'student'
@@ -50,8 +50,7 @@ export function Navigation({ userType, className, closeSidebar }: NavigationProp
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Add this for student status
-  const { status } = useStudentStatus();
+
 
   const toggleExpanded = (title: string) => {
     setExpandedItems(prev => 
@@ -71,14 +70,12 @@ export function Navigation({ userType, className, closeSidebar }: NavigationProp
       }
     ];
     
-    // Add Profile navigation if status is not 'Profile Pending' or if profile is submitted
-    if (status && status !== 'Profile Pending') {
-      studentNavItems.push({
-        title: "Profile",
-        path: "/student/profile",
-        icon: <UserCheck className="h-4 w-4" />
-      });
-    }
+    // Add Profile navigation
+    studentNavItems.push({
+      title: "Profile",
+      path: "/student/profile",
+      icon: <UserCheck className="h-4 w-4" />
+    });
     
     return studentNavItems;
   }

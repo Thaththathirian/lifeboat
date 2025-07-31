@@ -14,7 +14,7 @@ import { StudentStatus } from '@/types/student';
 import { useToast } from "@/hooks/use-toast";
 import ProfileForm from "@/components/ProfileForm";
 import SubmittedProfileDisplay from "@/components/SubmittedProfileDisplay";
-import { getStatusDisplayNameSafe } from "@/utils/statusUtils";
+
 
 function ApplyForNextModal({ open, onClose }: { open: boolean, onClose: () => void }) {
   const [form, setForm] = useState({
@@ -122,8 +122,7 @@ export default function StudentHome() {
     'Alumni',
   ];
 
-  // Status-driven home content
-  const getStatusCard = () => {
+
     console.log('Current status:', status);
     console.log('Current API status:', currentApiStatus);
     
@@ -337,39 +336,9 @@ export default function StudentHome() {
       );
     }
 
-    // Academic documents pending (merged with results pending)
-    if (status === StudentStatus.ACADEMIC_DOCUMENTS_PENDING || status === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED) {
-      return (
-        <Card className="mb-6 border-l-4 border-l-blue-500">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Academic Documents Pending</CardTitle>
-            <p className="text-muted-foreground mt-2">Please upload your current semester/year marksheets.</p>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/student/academic-documents')}>
-              Upload Academic Documents
-            </Button>
-          </CardContent>
-        </Card>
-      );
-    }
 
-    // Alumni status
-    if (status === StudentStatus.ALUMNI) {
-      return (
-        <Card className="mb-6 border-l-4 border-l-green-500">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Alumni</CardTitle>
-            <p className="text-green-700 font-semibold mt-2">Congratulations on completing your scholarship journey!</p>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/student/apply-next')}>
-              Apply for Scholarship
-            </Button>
-          </CardContent>
-        </Card>
-      );
-    }
+
+
 
     // Future Ready Module status
     if (status === StudentStatus.APPLY_FOR_NEXT) {
@@ -386,55 +355,20 @@ export default function StudentHome() {
       );
     }
 
-    // Default case
-    return (
-      <Card className="mb-6 border-l-4 border-l-gray-500">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome Back</CardTitle>
-          <p className="text-muted-foreground mt-2">Check your application status and continue your scholarship journey.</p>
-        </CardHeader>
-        {isProfileStatus(status) && !profile?.submitted && (
-          <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/student/profile')}>Update Profile</Button>
-          </CardContent>
-        )}
-        {isProfileStatus(status) && profile?.submitted && (
-          <CardContent className="flex justify-center">
-            <Button onClick={() => navigate('/student/profile')} variant="outline">View Profile</Button>
-          </CardContent>
-        )}
-      </Card>
-    );
-  };
+
+
+
 
   return (
-    <div className="flex flex-col items-center w-full min-h-[calc(100vh-4rem)] py-4 sm:py-6 md:py-8 px-2 sm:px-4">
+    <div className="flex flex-col items-center min-h-[calc(100vh-4rem)] py-4 sm:py-6 md:py-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-5xl"
+        className="w-full"
       >
-        {/* Application Status Card - Always First */}
-        <div className="mb-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold">Application Status</h2>
-                  <p className="text-muted-foreground">Current progress of your scholarship application</p>
-                </div>
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  {getStatusDisplayNameSafe(status)}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Status Card - Second */}
-        <div className="mb-8">
-          {getStatusCard()}
-        </div>
+
+
 
         {/* Profile Summary Card - Show when profile is submitted and verified */}
         {(status === StudentStatus.PERSONAL_DETAILS_SUBMITTED || status === StudentStatus.INTERVIEW_SCHEDULED || status === StudentStatus.ACADEMIC_DOCUMENTS_PENDING || status === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED || status === StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP || status === StudentStatus.PAYMENT_PENDING || status === StudentStatus.PAID || status === StudentStatus.PAYMENT_VERIFIED || status === StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED || status === StudentStatus.ALUMNI) && profile?.submitted && (
@@ -557,7 +491,7 @@ export default function StudentHome() {
           </div>
         )}
 
-        {/* Additional Cards - Only show after Application Status card */}
+        {/* Additional Cards */}
         <div className="space-y-6">
           {/* Stats Cards - only show payment details if showPaymentStats is true */}
           {showPaymentStats && (

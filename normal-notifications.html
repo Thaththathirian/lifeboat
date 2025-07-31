@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard with Multiple Notifications</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .dashboard {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Notification Container */
+        .notifications-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 380px;
+            max-height: calc(100vh - 40px);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            transition: all 0.3s ease;
+        }
+
+        .notifications-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .notifications-container.minimized {
+            opacity: 0;
+            transform: translateX(100%);
+            pointer-events: none;
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            z-index: 1001;
+            transition: all 0.3s ease;
+            animation: badgePulse 2s infinite;
+        }
+
+        .notification-badge:hover {
+            transform: scale(1.1);
+        }
+
+        .notification-badge.hidden {
+            display: none;
+        }
+
+        @keyframes badgePulse {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); }
+        }
+
+        /* Individual Notification Styles */
+        .notification {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .notification:nth-child(1) { animation-delay: 0.1s; }
+        .notification:nth-child(2) { animation-delay: 0.2s; }
+        .notification:nth-child(3) { animation-delay: 0.3s; }
+        .notification:nth-child(4) { animation-delay: 0.4s; }
+        .notification:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification.dismissed {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        @keyframes slideOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        .notification:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        .notification.expanded {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) !important;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            background: white;
+            backdrop-filter: none;
+            z-index: 1002;
+            cursor: default;
+            overflow-y: auto;
+            animation: expandIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes expandIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .notification-preview {
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .app-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .app-icon.system { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .app-icon.security { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .app-icon.update { background: linear-gradient(135deg, #45b7d1, #96c93d); }
+        .app-icon.warning { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 2px 0;
+            line-height: 1.2;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: #888;
+            margin: 0 0 4px 0;
+        }
+
+        .notification-preview-text {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            color: #666;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 0.7rem;
+            font-weight: bold;
+            opacity: 0;
+        }
+
+        .notification:hover .close-btn {
+            opacity: 1;
+        }
+
+        .close-btn:hover {
+            background: rgba(0,0,0,0.2);
+            color: #333;
+        }
+
+        .expanded-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        .expanded-close-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        /* Expanded notification styles */
+        .notification-header {
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .notification-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .notification-header.system { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .notification-header.security { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .notification-header.update { background: linear-gradient(135deg, #45b7d1, #96c93d); }
+        .notification-header.warning { background: linear-gradient(135deg, #f093fb, #f5576c); }
+
+        .notification-header.hidden { display: none; }
+
+        .notification-body {
+            padding: 1.5rem;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .notification-body.hidden { display: none; }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Clear all button */
+        .clear-all-btn {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0,0,0,0.1);
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        .clear-all-btn:hover {
+            background: white;
+            color: #333;
+            transform: translateY(-1px);
+        }
+
+        .clear-all-btn.hidden {
+            display: none;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .notifications-container {
+                width: calc(100% - 40px);
+                right: 20px;
+            }
+            
+            .notification.expanded {
+                width: 95%;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Notification Badge -->
+    <div class="notification-badge" id="notificationBadge">
+        <span id="badgeCount">4</span>
+    </div>
+
+    <!-- Clear All Button -->
+    <button class="clear-all-btn hidden" id="clearAllBtn">Clear All</button>
+
+    <!-- Notifications Container -->
+    <div class="notifications-container" id="notificationsContainer">
+        <!-- System Notification -->
+        <div class="notification" data-id="system" data-type="system">
+            <div class="notification-preview">
+                <div class="app-icon system">🔧</div>
+                <div class="notification-content">
+                    <div class="notification-title">System Maintenance</div>
+                    <div class="notification-time">2 minutes ago</div>
+                    <div class="notification-preview-text">
+                        Scheduled maintenance will begin at 2:00 AM EST. Some services may be temporarily unavailable...
+                    </div>
+                </div>
+                <button class="close-btn">×</button>
+            </div>
+            
+            <div class="notification-header system hidden">
+                <h3>🔧 System Maintenance Notice</h3>
+                <button class="expanded-close-btn">×</button>
+            </div>
+            
+            <div class="notification-body hidden">
+                <p><strong>Scheduled System Maintenance</strong></p>
+                <p>We will be performing routine system maintenance starting at 2:00 AM EST tonight. During this time:</p>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                    <li>Dashboard may be temporarily unavailable (15-30 minutes)</li>
+                    <li>Data synchronization will be paused</li>
+                    <li>Email notifications may be delayed</li>
+                    <li>All services will be restored by 4:00 AM EST</li>
+                </ul>
+                <p>We apologize for any inconvenience. Please save your work before the maintenance window.</p>
+            </div>
+        </div>
+
+        <!-- Security Notification -->
+        <div class="notification" data-id="security" data-type="security">
+            <div class="notification-preview">
+                <div class="app-icon security">🛡️</div>
+                <div class="notification-content">
+                    <div class="notification-title">Security Update Required</div>
+                    <div class="notification-time">1 hour ago</div>
+                    <div class="notification-preview-text">
+                        New security policies have been implemented. Please update your password within 7 days...
+                    </div>
+                </div>
+                <button class="close-btn">×</button>
+            </div>
+            
+            <div class="notification-header security hidden">
+                <h3>🛡️ Security Policy Update</h3>
+                <button class="expanded-close-btn">×</button>
+            </div>
+            
+            <div class="notification-body hidden">
+                <p><strong>Important Security Update</strong></p>
+                <p>We've implemented new security measures to better protect your account:</p>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                    <li>Password must be updated within 7 days</li>
+                    <li>Two-factor authentication is now required</li>
+                    <li>Session timeout reduced to 4 hours</li>
+                    <li>Suspicious login attempts will be blocked</li>
+                </ul>
+                <p><em>Failure to update your password within 7 days will result in temporary account restriction.</em></p>
+            </div>
+        </div>
+
+        <!-- Update Notification -->
+        <div class="notification" data-id="update" data-type="update">
+            <div class="notification-preview">
+                <div class="app-icon update">📱</div>
+                <div class="notification-content">
+                    <div class="notification-title">App Update Available</div>
+                    <div class="notification-time">3 hours ago</div>
+                    <div class="notification-preview-text">
+                        Version 2.4.1 is now available with bug fixes and performance improvements...
+                    </div>
+                </div>
+                <button class="close-btn">×</button>
+            </div>
+            
+            <div class="notification-header update hidden">
+                <h3>📱 App Update Available</h3>
+                <button class="expanded-close-btn">×</button>
+            </div>
+            
+            <div class="notification-body hidden">
+                <p><strong>New Version Available: 2.4.1</strong></p>
+                <p>This update includes:</p>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                    <li>Fixed dashboard loading issues</li>
+                    <li>Improved notification system</li>
+                    <li>Enhanced data visualization</li>
+                    <li>Better mobile responsiveness</li>
+                    <li>Security patches and bug fixes</li>
+                </ul>
+                <p>The update will take approximately 2-3 minutes to complete.</p>
+            </div>
+        </div>
+
+        <!-- Warning Notification -->
+        <div class="notification" data-id="warning" data-type="warning">
+            <div class="notification-preview">
+                <div class="app-icon warning">⚠️</div>
+                <div class="notification-content">
+                    <div class="notification-title">Storage Almost Full</div>
+                    <div class="notification-time">5 hours ago</div>
+                    <div class="notification-preview-text">
+                        Your account storage is 87% full. Consider upgrading your plan or cleaning up old files...
+                    </div>
+                </div>
+                <button class="close-btn">×</button>
+            </div>
+            
+            <div class="notification-header warning hidden">
+                <h3>⚠️ Storage Warning</h3>
+                <button class="expanded-close-btn">×</button>
+            </div>
+            
+            <div class="notification-body hidden">
+                <p><strong>Storage Capacity Warning</strong></p>
+                <p>Your current storage usage: <strong>8.7 GB of 10 GB (87%)</strong></p>
+                <p>To free up space, you can:</p>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                    <li>Delete old project files and backups</li>
+                    <li>Clear temporary files and cache</li>
+                    <li>Archive completed projects</li>
+                    <li>Upgrade to a higher storage plan</li>
+                </ul>
+                <p><em>When storage reaches 100%, you won't be able to save new files.</em></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard">
+        <div class="dashboard-header">
+            <h1>📊 My Dashboard</h1>
+            <p>Welcome to your personalized dashboard</p>
+        </div>
+
+        <div class="dashboard-content">
+            <div class="card">
+                <h3>📈 Analytics</h3>
+                <p>View your performance metrics and key insights.</p>
+            </div>
+            <div class="card">
+                <h3>👥 Team</h3>
+                <p>Manage your team members and collaborate effectively.</p>
+            </div>
+            <div class="card">
+                <h3>📋 Projects</h3>
+                <p>Track your ongoing projects and deadlines.</p>
+            </div>
+            <div class="card">
+                <h3>⚙️ Settings</h3>
+                <p>Customize your dashboard preferences and account settings.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let expandedNotification = null;
+        let notifications = [];
+        let isMinimized = false;
+
+        const badge = document.getElementById('notificationBadge');
+        const badgeCount = document.getElementById('badgeCount');
+        const container = document.getElementById('notificationsContainer');
+        const overlay = document.getElementById('overlay');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+
+        function updateBadgeCount() {
+            const count = notifications.length;
+            badgeCount.textContent = count;
+            
+            if (count === 0) {
+                badge.classList.add('hidden');
+                clearAllBtn.classList.add('hidden');
+                isMinimized = false;
+            } else {
+                badge.classList.remove('hidden');
+                badgeCount.textContent = count;
+            }
+        }
+
+        function toggleNotifications() {
+            isMinimized = !isMinimized;
+            
+            if (isMinimized) {
+                container.classList.add('minimized');
+                clearAllBtn.classList.add('hidden');
+            } else {
+                container.classList.remove('minimized');
+                if (notifications.length > 1) {
+                    clearAllBtn.classList.remove('hidden');
+                }
+            }
+        }
+
+        function expandNotification(notificationElement) {
+            if (expandedNotification) return;
+            
+            expandedNotification = notificationElement;
+            const type = notificationElement.dataset.type;
+            
+            // Hide preview, show expanded content
+            notificationElement.querySelector('.notification-preview').style.display = 'none';
+            notificationElement.querySelector('.notification-header').classList.remove('hidden');
+            notificationElement.querySelector('.notification-body').classList.remove('hidden');
+            
+            // Add expanded class and show overlay
+            notificationElement.classList.add('expanded');
+            overlay.classList.add('visible');
+            
+            // Hide other notifications temporarily
+            notifications.forEach(n => {
+                if (n !== notificationElement) {
+                    n.style.opacity = '0.3';
+                }
+            });
+        }
+
+        function collapseNotification() {
+            if (!expandedNotification) return;
+            
+            const notificationElement = expandedNotification;
+            
+            // Show preview, hide expanded content
+            notificationElement.querySelector('.notification-preview').style.display = 'flex';
+            notificationElement.querySelector('.notification-header').classList.add('hidden');
+            notificationElement.querySelector('.notification-body').classList.add('hidden');
+            
+            // Remove expanded class and hide overlay
+            notificationElement.classList.remove('expanded');
+            overlay.classList.remove('visible');
+            
+            // Show other notifications
+            notifications.forEach(n => {
+                n.style.opacity = '1';
+            });
+            
+            expandedNotification = null;
+        }
+
+        function dismissNotification(notificationElement, animate = true) {
+            if (animate) {
+                notificationElement.classList.add('dismissed');
+                setTimeout(() => {
+                    removeNotification(notificationElement);
+                }, 300);
+            } else {
+                removeNotification(notificationElement);
+            }
+        }
+
+        function removeNotification(notificationElement) {
+            notifications = notifications.filter(n => n !== notificationElement);
+            notificationElement.remove();
+            updateBadgeCount();
+            
+            if (notifications.length === 0) {
+                container.classList.add('minimized');
+                clearAllBtn.classList.add('hidden');
+                isMinimized = true;
+            }
+            
+            if (expandedNotification === notificationElement) {
+                expandedNotification = null;
+                overlay.classList.remove('visible');
+            }
+        }
+
+        function clearAllNotifications() {
+            notifications.forEach(notification => {
+                notification.classList.add('dismissed');
+            });
+            
+            setTimeout(() => {
+                notifications = [];
+                container.innerHTML = '';
+                container.classList.add('minimized');
+                clearAllBtn.classList.add('hidden');
+                updateBadgeCount();
+                isMinimized = true;
+                
+                if (expandedNotification) {
+                    expandedNotification = null;
+                    overlay.classList.remove('visible');
+                }
+            }, 300);
+        }
+
+        function initializeNotifications() {
+            notifications = Array.from(document.querySelectorAll('.notification'));
+            updateBadgeCount();
+
+            // Add event listeners to each notification
+            notifications.forEach(notification => {
+                const preview = notification.querySelector('.notification-preview');
+                const closeBtn = notification.querySelector('.close-btn');
+                const expandedCloseBtn = notification.querySelector('.expanded-close-btn');
+                
+                // Click on preview to expand
+                preview.addEventListener('click', (e) => {
+                    if (e.target === closeBtn) return;
+                    expandNotification(notification);
+                });
+                
+                // Close button in preview
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dismissNotification(notification);
+                });
+                
+                // Expanded close button
+                expandedCloseBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dismissNotification(notification);
+                });
+            });
+        }
+
+        // Event listeners
+        badge.addEventListener('click', toggleNotifications);
+        clearAllBtn.addEventListener('click', clearAllNotifications);
+        
+        overlay.addEventListener('click', () => {
+            if (expandedNotification) {
+                collapseNotification();
+            } else {
+                toggleNotifications();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (expandedNotification) {
+                    collapseNotification();
+                } else if (!isMinimized) {
+                    toggleNotifications();
+                }
+            }
+        });
+
+        // Initialize
+        initializeNotifications();
+
+        // Demo: Add new notification after 10 seconds
+        setTimeout(() => {
+            const newNotification = document.createElement('div');
+            newNotification.className = 'notification';
+            newNotification.setAttribute('data-id', 'new-message');
+            newNotification.setAttribute('data-type', 'system');
+            newNotification.innerHTML = `
+                <div class="notification-preview">
+                    <div class="app-icon system">💬</div>
+                    <div class="notification-content">
+                        <div class="notification-title">New Message</div>
+                        <div class="notification-time">now</div>
+                        <div class="notification-preview-text">
+                            You have received a new message from your team lead about the upcoming project deadline...
+                        </div>
+                    </div>
+                    <button class="close-btn">×</button>
+                </div>
+                
+                <div class="notification-header system hidden">
+                    <h3>💬 New Message</h3>
+                    <button class="expanded-close-btn">×</button>
+                </div>
+                
+                <div class="notification-body hidden">
+                    <p><strong>Message from Team Lead</strong></p>
+                    <p>Hi team,</p>
+                    <p>Just a quick reminder about our upcoming project deadline on Friday. Please make sure to:</p>
+                    <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                        <li>Complete your assigned tasks</li>
+                        <li>Update the project status board</li>
+                        <li>Submit your progress reports</li>
+                        <li>Attend tomorrow's review meeting at 2 PM</li>
+                    </ul>
+                    <p>Let me know if you have any questions or need additional resources.</p>
+                    <p>Thanks!</p>
+                </div>
+            `;
+            
+            container.appendChild(newNotification);
+            notifications.push(newNotification);
+            updateBadgeCount();
+            
+            // If notifications are minimized, show them when a new one arrives
+            if (isMinimized) {
+                isMinimized = false;
+                container.classList.remove('minimized');
+                if (notifications.length > 1) {
+                    clearAllBtn.classList.remove('hidden');
+                }
+            }
+            
+            // Add event listeners to the new notification
+            const preview = newNotification.querySelector('.notification-preview');
+            const closeBtn = newNotification.querySelector('.close-btn');
+            const expandedCloseBtn = newNotification.querySelector('.expanded-close-btn');
+            
+            preview.addEventListener('click', (e) => {
+                if (e.target === closeBtn) return;
+                expandNotification(newNotification);
+            });
+            
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dismissNotification(newNotification);
+            });
+            
+            expandedCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dismissNotification(newNotification);
+            });
+            
+        }, 10000);
+    </script>
+</body>
+</html>
