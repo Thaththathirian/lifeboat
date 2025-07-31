@@ -3,7 +3,7 @@ import { useStudentStatusSync } from '@/hooks/useStudentStatusSync';
 import { StudentStatus, getStatusDescription } from '@/types/student';
 
 const STATUS_KEY = 'studentStatus';
-const defaultStatus = StudentStatus.PERSONAL_DOCUMENTS_PENDING;
+const defaultStatus = StudentStatus.PERSONAL_DETAILS_SUBMITTED;
 
 export const StudentStatusContext = createContext({
   status: defaultStatus,
@@ -60,13 +60,13 @@ export function StudentStatusProvider({ children }: { children: React.ReactNode 
       if (isNewUser) {
         newStatus = StudentStatus.NEW_USER;
       } else if (isMobileVerified) {
-        newStatus = StudentStatus.PROFILE_UPDATE_PENDING;
+        newStatus = StudentStatus.PERSONAL_DETAILS_PENDING;
       } else if (isProfileUpdated) {
-        newStatus = StudentStatus.PERSONAL_DOCUMENTS_PENDING;
+        newStatus = StudentStatus.PERSONAL_DETAILS_SUBMITTED;
       } else if (isInterviewScheduled) {
         newStatus = StudentStatus.INTERVIEW_SCHEDULED;
       } else if (isDocumentUploaded) {
-        newStatus = StudentStatus.PERSONAL_DOCUMENTS_PENDING;
+        newStatus = StudentStatus.PERSONAL_DETAILS_SUBMITTED;
       } else if (isWaitingForPayment) {
         newStatus = StudentStatus.PAYMENT_PENDING;
       } else if (isPaymentCompleted) {

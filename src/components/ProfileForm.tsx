@@ -1021,7 +1021,7 @@ export default function ProfileForm() {
       setProfile(submittedProfile);
       
       // Update status to profile pending verification
-              setStatus(STUDENT_STATUS.PERSONAL_DOCUMENTS_PENDING as any);
+              setStatus(STUDENT_STATUS.PERSONAL_DETAILS_SUBMITTED as any);
       
       // Clear profile cache after successful submission
       clearProfileCache();
@@ -1050,7 +1050,7 @@ export default function ProfileForm() {
 
   // Check if profile is submitted but not yet approved
   const isSubmitted = profile?.submitted;
-          const isReadOnly = isSubmitted && profile?.status !== STUDENT_STATUS.PERSONAL_DOCUMENTS_PENDING;
+          const isReadOnly = isSubmitted && profile?.status !== STUDENT_STATUS.PERSONAL_DETAILS_SUBMITTED;
 
   // Progress calculation
   const progress = (currentStep / 3) * 100;

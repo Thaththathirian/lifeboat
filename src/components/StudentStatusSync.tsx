@@ -18,46 +18,40 @@ export function StudentStatusSync() {
          case 0: // NEW_USER
            newStatus = 'mobile_verification_required';
            break;
-         case 1: // PROFILE_UPDATE_PENDING
+         case 1: // PERSONAL_DETAILS_PENDING
            newStatus = 'profile_form_required';
            break;
-         case 2: // PERSONAL_DOCUMENTS_PENDING
+         case 2: // PERSONAL_DETAILS_SUBMITTED
            newStatus = 'Profile Pending';
            break;
-         case 3: // PERSONAL_DOCUMENTS_PENDING
-           newStatus = 'Documents pending';
-           break;
-         case 4: // PERSONAL_DOCUMENTS_SUBMITTED
-           newStatus = 'Documents submitted';
-           break;
-         case 5: // INTERVIEW_SCHEDULED
+         case 3: // INTERVIEW_SCHEDULED
            newStatus = 'Schedule Interview';
            break;
-         case 6: // ACADEMIC_DOCUMENTS_PENDING
+         case 4: // ACADEMIC_DOCUMENTS_PENDING
            newStatus = 'Academic documents pending';
            break;
-         case 7: // ACADEMIC_DOCUMENTS_SUBMITTED
+         case 5: // ACADEMIC_DOCUMENTS_SUBMITTED
            newStatus = 'Academic documents submitted';
            break;
-         case 8: // ELIGIBLE_FOR_SCHOLARSHIP
+         case 6: // ELIGIBLE_FOR_SCHOLARSHIP
            newStatus = 'eligible_scholarship';
            break;
-         case 9: // PAYMENT_PENDING
+         case 7: // PAYMENT_PENDING
            newStatus = 'payment';
            break;
-         case 10: // PAID
+         case 8: // PAID
            newStatus = 'paid';
            break;
-         case 11: // PAYMENT_VERIFIED
+         case 9: // PAYMENT_VERIFIED
            newStatus = 'payment_verified';
            break;
-         case 12: // RECEIPT_DOCUMENTS_SUBMITTED
+         case 10: // RECEIPT_DOCUMENTS_SUBMITTED
            newStatus = 'active';
            break;
-         case 13: // ALUMNI
+         case 11: // ALUMNI
            newStatus = 'alumni';
            break;
-         case 14: // BLOCKED
+         case 12: // BLOCKED
            newStatus = 'blocked';
            break;
          default:
