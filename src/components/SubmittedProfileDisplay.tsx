@@ -277,9 +277,9 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
             onIncompleteProfile(hasIncompleteSections ? incompleteSections : []);
             return;
           }
-        } else if (studentStatus === StudentStatus.PERSONAL_DETAILS_SUBMITTED) {
+        } else if (studentStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING) {
           // Status 2: User submitted profile - ONLY call get_submitted_profile
-          console.log('Status is PERSONAL_DETAILS_SUBMITTED (2), fetching submitted profile...');
+          console.log('Status is PERSONAL_DOCUMENTS_PENDING (2), fetching submitted profile...');
           const data = await getSubmittedProfileData();
           
           if (data) {
@@ -320,13 +320,13 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
     };
 
     // Fetch data when API status is available and we're in a relevant status
-    if (currentApiStatus !== null && (currentApiStatus === StudentStatus.NEW_USER || currentApiStatus === StudentStatus.PERSONAL_DETAILS_PENDING || currentApiStatus === StudentStatus.PERSONAL_DETAILS_SUBMITTED)) {
+    if (currentApiStatus !== null && (currentApiStatus === StudentStatus.NEW_USER || currentApiStatus === StudentStatus.PERSONAL_DETAILS_PENDING || currentApiStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING)) {
       fetchData();
     }
   }, [currentApiStatus, onIncompleteProfile, setStatus, checkIndividualSections, incompleteSections]);
 
-      // Only render when API status is PERSONAL_DETAILS_SUBMITTED (2) or when we have submitted data
-    if (currentApiStatus !== StudentStatus.PERSONAL_DETAILS_SUBMITTED && !submittedData) {
+      // Only render when API status is PERSONAL_DOCUMENTS_PENDING (2) or when we have submitted data
+    if (currentApiStatus !== StudentStatus.PERSONAL_DOCUMENTS_PENDING && !submittedData) {
       return null;
     }
 
@@ -341,7 +341,7 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
           <p className="text-muted-foreground mt-2">
             {currentApiStatus === StudentStatus.NEW_USER && "Loading profile form..."}
             {currentApiStatus === StudentStatus.PERSONAL_DETAILS_PENDING && "Loading profile form..."}
-            {currentApiStatus === StudentStatus.PERSONAL_DETAILS_SUBMITTED && "Loading submitted profile..."}
+            {currentApiStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING && "Loading submitted profile..."}
             {currentApiStatus === StudentStatus.INTERVIEW_SCHEDULED && "Loading interview details..."}
             {currentApiStatus === StudentStatus.DOCUMENT_UPLOADED && "Loading document status..."}
             {!currentApiStatus && "Loading..."}
