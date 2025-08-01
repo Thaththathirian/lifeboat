@@ -6,6 +6,7 @@ import { BadgeCheck } from "lucide-react";
 import { useStudent } from "@/contexts/StudentContext";
 import { getTotalReceived } from "./StudentPayments";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
+import { StudentStatus } from '@/types/student';
 
 const profile = {
   firstName: "Rahul",
@@ -49,7 +50,7 @@ export default function StudentApplication() {
     setSubmitted(true);
     setApplication({ profile, documents: uploads });
     setProfile(profile);
-    setStatus('Upload Documents');
+    setStatus(StudentStatus.PERSONAL_DOCUMENTS_PENDING);
     // In a real app, you would save to backend here
     setTimeout(() => {
       window.location.href = '/student/documents';
@@ -58,21 +59,20 @@ export default function StudentApplication() {
 
   const canSubmit = documents.filter(d => d.required).every(d => uploads[d.key]);
 
-  if (status === 'Blocked') {
+  if (status === StudentStatus.BLOCKED) {
     return <div className="max-w-2xl mx-auto py-10 px-4 text-center text-red-600 font-bold text-xl">Your account has been blocked. Please contact support.</div>;
   }
   // Allow application to be visible at more statuses
   const visibleStatuses = [
-    'Schedule Interview',
-    'Eligible for Scholarship',
-    'Payment Pending',
-    'Paid',
-    'Academic Results Pending',
-    'Academic verification pending',
-    'Apply for Next',
-    'Alumni',
-    'Upload Documents', // <-- add this
-    'Documents Submitted', // <-- add this
+    StudentStatus.INTERVIEW_SCHEDULED,
+    StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP,
+    StudentStatus.PAYMENT_PENDING,
+    StudentStatus.PAID,
+    StudentStatus.ACADEMIC_DOCUMENTS_PENDING,
+    StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED,
+    StudentStatus.ALUMNI,
+    StudentStatus.PERSONAL_DOCUMENTS_PENDING,
+    StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED,
   ];
   if (!visibleStatuses.includes(status)) {
     return <div className="max-w-2xl mx-auto py-10 px-4 text-center text-gray-600 font-bold text-xl">Application is not available at this stage.</div>;

@@ -12,6 +12,7 @@ import { Upload, FileText, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { StudentStatus } from '@/types/student';
 
 const documentsSchema = z.object({
   collegeName: z.string().min(1, "College name is required"),
@@ -78,7 +79,7 @@ export default function StudentDocuments() {
     // Use otherGrade if grade is 'other'
     const gradeToSave = data.grade === 'other' ? data.otherGrade : data.grade;
     setDocuments({ ...data, grade: gradeToSave, uploads });
-    setStatus('Application form submitted');
+    setStatus(StudentStatus.APPLICATION_SUBMITTED);
   };
 
   const requiredDocs = documentTypes.filter(doc => doc.required);
@@ -86,19 +87,18 @@ export default function StudentDocuments() {
 
   // List of statuses where documents should be visible in read-only mode
   const readOnlyStatuses = [
-    'Application form submitted',
-    'Schedule Interview',
-    'Eligible for Scholarship',
-    'Payment Pending',
-    'Paid',
-    'Academic Documents Pending',
-    'Academic Documents Submitted',
-    'Apply for Next',
-    'Alumni',
-    'Blocked',
+    StudentStatus.APPLICATION_SUBMITTED,
+    StudentStatus.INTERVIEW_SCHEDULED,
+    StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP,
+    StudentStatus.PAYMENT_PENDING,
+    StudentStatus.PAID,
+    StudentStatus.ACADEMIC_DOCUMENTS_PENDING,
+    StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED,
+    StudentStatus.ALUMNI,
+    StudentStatus.BLOCKED,
   ];
 
-  if (status === 'Profile Update') {
+  if (status === StudentStatus.PERSONAL_DETAILS_PENDING) {
     return (
       <div className="text-center text-lg text-gray-500 py-16">
         Please complete your profile update before accessing this section.
@@ -106,7 +106,7 @@ export default function StudentDocuments() {
     );
   }
 
-  if (status === 'Scholarship Documents Pending') {
+  if (status === StudentStatus.PERSONAL_DOCUMENTS_PENDING) {
     return (
       <div className="max-w-4xl mx-auto py-10 px-4">
         <Card className="shadow-xl">

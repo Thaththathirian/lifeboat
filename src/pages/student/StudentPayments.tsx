@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { CheckCircle, Upload } from 'lucide-react';
+import { StudentStatus } from '@/types/student';
 
 export const payments = [
   { date: "2024-01-15", amount: 10000, status: "Credited", remarks: "First Installment", donor: "John Donor" },
@@ -23,11 +24,11 @@ export default function StudentPayments() {
   const [receiptStatus, setReceiptStatus] = useState<'none' | 'pending' | 'verified'>('none');
   const [error, setError] = useState('');
 
-  if (status === 'Blocked') {
+  if (status === StudentStatus.BLOCKED) {
     return <div className="max-w-2xl mx-auto py-10 px-4 text-center text-red-600 font-bold text-xl">Your account has been blocked. Please contact support.</div>;
   }
 
-  if (status === 'Payment Pending' || status === 'Paid') {
+  if (status === StudentStatus.PAYMENT_PENDING || status === StudentStatus.PAID) {
     return (
       <div className="max-w-full mx-auto py-10 min-h-[80vh] flex flex-col">
         <h2 className="text-2xl font-bold mb-6">Scholarship Payments</h2>
@@ -71,13 +72,13 @@ export default function StudentPayments() {
           </div>
           <div className="flex-1 flex items-center md:items-start">
             <div className="max-w-xl text-sm text-blue-700 bg-blue-100 rounded p-4 w-full">
-              {status === 'Payment Pending' && (
+              {status === StudentStatus.PAYMENT_PENDING && (
                 <>
                   <div>Your payment is being processed. Please upload your fee receipt once you receive the payment.</div>
                   {receipt && <div className="mt-2 text-yellow-700">Your receipt is pending verification by the college/admin.</div>}
                 </>
               )}
-              {status === 'Paid' && (
+              {status === StudentStatus.PAID && (
                 <>
                   <div>Your payment has been credited. Please upload your fee receipt if not already done.</div>
                   {receiptStatus === 'pending' && <div className="mt-2 text-yellow-700">Your receipt is pending verification by the college/admin.</div>}
@@ -87,7 +88,7 @@ export default function StudentPayments() {
             </div>
           </div>
         </div>
-        {status === 'Paid' && (
+        {status === StudentStatus.PAID && (
           <div className="bg-white p-6 rounded-xl shadow-soft overflow-x-auto flex-1 mb-8">
             <table className="w-full min-w-[600px] text-left text-sm">
               <thead>
@@ -117,15 +118,14 @@ export default function StudentPayments() {
     );
   }
 
-  // Show payment history for Paid and later statuses
-  const summaryStatuses = [
-    'Paid',
-    'Academic results pending',
-    'Academic verification pending',
-    'Apply for Next',
-    'Alumni',
-    'Blocked',
-  ];
+      // Show payment history for Paid and later statuses
+    const summaryStatuses = [
+      StudentStatus.PAID,
+      StudentStatus.PAYMENT_VERIFIED,
+      StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED,
+      StudentStatus.ALUMNI,
+      StudentStatus.BLOCKED,
+    ];
   if (summaryStatuses.includes(status)) {
     return (
       <div className="max-w-full mx-auto py-10 min-h-[80vh] flex flex-col">
@@ -157,7 +157,7 @@ export default function StudentPayments() {
       </div>
     );
   }
-  if (status !== 'Payment Pending' && status !== 'Paid') {
+  if (status !== StudentStatus.PAYMENT_PENDING && status !== StudentStatus.PAID) {
     return <div className="max-w-2xl mx-auto py-10 px-4 text-center text-gray-600 font-bold text-xl">Payment information is not available at this stage.</div>;
   }
 
@@ -210,13 +210,13 @@ export default function StudentPayments() {
       </div>
       {/* Notification/Info */}
       <div className="max-w-xl mx-auto text-sm text-blue-700 bg-blue-100 rounded p-4">
-        {status === 'Payment Pending' && (
+        {status === StudentStatus.PAYMENT_PENDING && (
           <>
             <div>Your payment is being processed. Please upload your fee receipt once you receive the payment.</div>
             {receipt && <div className="mt-2 text-yellow-700">Your receipt is pending verification by the college/admin.</div>}
           </>
         )}
-        {status === 'Paid' && (
+        {status === StudentStatus.PAID && (
           <>
             <div>Your payment has been credited. Please upload your fee receipt if not already done.</div>
             {receiptStatus === 'pending' && <div className="mt-2 text-yellow-700">Your receipt is pending verification by the college/admin.</div>}

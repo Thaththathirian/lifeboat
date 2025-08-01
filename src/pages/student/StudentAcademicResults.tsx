@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { CheckCircle, Upload, XCircle } from 'lucide-react';
+import { StudentStatus } from '@/types/student';
 
 const results = [
   {
@@ -31,10 +32,10 @@ export default function StudentAcademicResults() {
   const [error, setError] = useState('');
   const [verificationStatus, setVerificationStatus] = useState<'pending' | 'verified' | 'rejected'>('pending'); // Simulate verification
 
-  if (status === 'Blocked') {
+  if (status === StudentStatus.BLOCKED) {
     return <div className="max-w-2xl mx-auto py-10 px-4 text-center text-red-600 font-bold text-xl">Your account has been blocked. Please contact support.</div>;
   }
-  if (status === 'Academic Documents Pending') {
+  if (status === StudentStatus.ACADEMIC_DOCUMENTS_PENDING) {
     return (
       <div className="max-w-4xl mx-auto py-10">
         <h2 className="text-2xl font-bold mb-6">Academic Documents Pending</h2>
@@ -72,7 +73,7 @@ export default function StudentAcademicResults() {
           <button
             className="mt-4 w-full bg-blue-600 text-white rounded py-2 font-semibold disabled:opacity-50"
             disabled={files.length === 0}
-            onClick={() => { setStatus('Academic Documents Submitted'); }}
+            onClick={() => { setStatus(StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED); }}
           >
             Submit Academic Documents
           </button>
@@ -83,7 +84,7 @@ export default function StudentAcademicResults() {
       </div>
     );
   }
-  if (status === 'Academic Documents Submitted') {
+  if (status === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED) {
     return (
       <div className="max-w-4xl mx-auto py-10">
         <h2 className="text-2xl font-bold mb-6">Academic Documents Submitted</h2>
@@ -135,8 +136,7 @@ export default function StudentAcademicResults() {
   }
   // Show summary for Apply for Next and later statuses
   const summaryStatuses = [
-    'Apply for Next',
-    'Alumni',
+    StudentStatus.ALUMNI,
   ];
   if (summaryStatuses.includes(status)) {
     return (

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
+import { StudentStatus } from '@/types/student';
 
 const alumni = [
   {
@@ -46,17 +47,16 @@ const mentorship = [
 
 export default function StudentAlumni() {
   const { status, setStatus } = useStudentStatus();
-  if (status === 'Blocked') {
+  if (status === StudentStatus.BLOCKED) {
     return <div className="max-w-2xl mx-auto py-10 px-4 text-center text-red-600 font-bold text-xl">Your account has been blocked. Please contact support.</div>;
   }
   const alumniStatuses = [
-    'Eligible for Scholarship',
-    'Payment Pending',
-    'Paid',
-    'Academic results pending',
-    'Academic verification pending',
-    'Apply for Next',
-    'Alumni',
+    StudentStatus.ELIGIBLE_FOR_SCHOLARSHIP,
+    StudentStatus.PAYMENT_PENDING,
+    StudentStatus.PAID,
+    StudentStatus.PAYMENT_VERIFIED,
+    StudentStatus.RECEIPT_DOCUMENTS_SUBMITTED,
+    StudentStatus.ALUMNI,
   ];
   if (!alumniStatuses.includes(status)) {
     return <div className="max-w-2xl mx-auto py-10 px-4 text-center text-gray-600 font-bold text-xl">Alumni features are not available at this stage.</div>;
@@ -67,7 +67,7 @@ export default function StudentAlumni() {
         Alumni Network
         <Button
           className="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700"
-          onClick={() => setStatus('Profile Update')}
+          onClick={() => setStatus(StudentStatus.PERSONAL_DETAILS_PENDING)}
         >
           Apply Again
         </Button>
