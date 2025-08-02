@@ -9,6 +9,7 @@ import { googleProvider, getGoogleOAuthUrl, handleOAuthCallback, verifyOAuthConf
 import { useStudent } from "@/contexts/StudentContext";
 import { authenticateWithBackend } from "@/utils/backendService";
 import OTPVerification from "@/components/OTPVerification";
+import LoadingOverlay from "@/components/LoadingOverlay";
 import { testFirebase, testRecaptcha } from "@/utils/firebase-test";
 
 interface GoogleUser {
@@ -23,6 +24,8 @@ export default function StudentLandingPage() {
   const { setStatus, setProfile } = useStudent();
   const [isHovered, setIsHovered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingScript, setIsLoadingScript] = useState(false);
+  const [isPromptingOAuth, setIsPromptingOAuth] = useState(false);
   const [showOTPVerification, setShowOTPVerification] = useState(false);
   const [googleUserData, setGoogleUserData] = useState<GoogleUser | null>(null);
   const [hasCalledOAuth, setHasCalledOAuth] = useState(false);
@@ -130,6 +133,7 @@ export default function StudentLandingPage() {
     testFirebaseConfig();
     
     // Load Google OAuth script
+    setIsLoadingScript(true);
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
@@ -137,6 +141,7 @@ export default function StudentLandingPage() {
     document.head.appendChild(script);
 
     script.onload = () => {
+      setIsLoadingScript(false);
       console.log('Google OAuth script loaded');
       if (window.google) {
         try {
@@ -195,6 +200,7 @@ export default function StudentLandingPage() {
     };
 
     script.onerror = () => {
+      setIsLoadingScript(false);
       console.error('Failed to load Google OAuth script');
       toast({
         title: "Authentication Error",
@@ -278,10 +284,12 @@ export default function StudentLandingPage() {
       }
       
       setIsLoading(false);
+      setIsPromptingOAuth(false);
       
     } catch (error) {
       console.error('Google Sign-In failed:', error);
       setIsLoading(false);
+      setIsPromptingOAuth(false);
       toast({
         title: "Google Login Failed",
         description: error instanceof Error ? error.message : "Please try again or contact support.",
@@ -295,7 +303,7 @@ export default function StudentLandingPage() {
   // Trigger Google Sign-In
   const handleApplyNow = () => {
     // Prevent multiple clicks
-    if (isLoading) {
+    if (isLoading || isPromptingOAuth) {
       return;
     }
 
@@ -303,11 +311,13 @@ export default function StudentLandingPage() {
     
     // Set loading state immediately
     setIsLoading(true);
+    setIsPromptingOAuth(true);
     
     // Add timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       console.log('Google OAuth timeout, resetting state');
       setIsLoading(false);
+      setIsPromptingOAuth(false);
       toast({
         title: "Authentication Timeout",
         description: "Google authentication is taking too long. Please try again.",
@@ -337,6 +347,7 @@ export default function StudentLandingPage() {
         console.error('Google OAuth prompt failed:', error);
         clearTimeout(timeoutId);
         setIsLoading(false);
+        setIsPromptingOAuth(false);
         
         // Handle different types of errors
         const errorMessage = error.toString();
@@ -368,6 +379,7 @@ export default function StudentLandingPage() {
       console.log('Google OAuth not loaded, attempting to reload...');
       clearTimeout(timeoutId);
       setIsLoading(false);
+      setIsPromptingOAuth(false);
       
       // Fallback: try to reload the script
       const script = document.createElement('script');
@@ -587,6 +599,17 @@ export default function StudentLandingPage() {
         <p>© 2024 Scholarship Connect. All rights reserved.</p>
       </footer>
 
+      {/* Loading Overlay */}
+      <LoadingOverlay 
+        isVisible={isLoading || isLoadingScript || isPromptingOAuth} 
+        message={
+          isLoadingScript 
+            ? "Loading Google authentication..." 
+            : isPromptingOAuth 
+            ? "Opening Google sign-in..." 
+            : "Signing in with Google..."
+        }
+      />
 
     </div>
   );

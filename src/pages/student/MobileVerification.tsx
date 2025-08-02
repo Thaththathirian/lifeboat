@@ -45,7 +45,7 @@ export default function MobileVerification() {
 
   // If no Google user data, redirect to landing page
   if (!googleUserData) {
-    navigate('/student-landing');
+    navigate('/');
     return null;
   }
 
@@ -227,7 +227,7 @@ export default function MobileVerification() {
   const handleBackToLanding = () => {
     // Clear stored data and go back to landing page
     localStorage.removeItem('googleUserData');
-    navigate('/student-landing');
+    navigate('/');
   };
 
   // Handle OTP verification with Firebase
