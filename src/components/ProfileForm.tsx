@@ -56,7 +56,6 @@ export default function ProfileForm() {
     motherName: profile?.motherName || "",
     motherOccupationType: profile?.motherOccupationType || "",
     motherOccupationDetails: profile?.motherOccupationDetails || "",
-    parentsPhone: profile?.parentsPhone || "",
     parentsPhoneLandline: profile?.parentsPhoneLandline || "",
     familyDetails: profile?.familyDetails || "",
     familyAnnualIncome: profile?.familyAnnualIncome || "",
@@ -386,12 +385,9 @@ export default function ProfileForm() {
           }
           break;
         case 'mobile':
-        case 'parentsPhone':
           // Filter out non-digits and limit to 10 digits
           validatedValue = value.replace(/\D/g, '').slice(0, 10);
-          const mobileValidation = validateMobile(validatedValue, 
-            field === 'mobile' ? 'Mobile Number' : 
-            field === 'parentsPhone' ? 'Parents\' Phone Number' : 'College Phone');
+          const mobileValidation = validateMobile(validatedValue, 'Mobile Number');
           if (!mobileValidation.isValid) {
             fieldError = mobileValidation.error;
           }
@@ -507,8 +503,7 @@ export default function ProfileForm() {
           motherName: updatedFormData.motherName,
           motherOccupationType: updatedFormData.motherOccupationType,
           motherOccupationDetails: updatedFormData.motherOccupationDetails,
-          parentsPhone: updatedFormData.parentsPhone,
-          parentsPhoneLandline: updatedFormData.parentsPhoneLandline,
+                  parentsPhoneLandline: updatedFormData.parentsPhoneLandline,
           familyDetails: updatedFormData.familyDetails,
           familyAnnualIncome: updatedFormData.familyAnnualIncome,
           numberOfSiblings: updatedFormData.numberOfSiblings,
@@ -574,7 +569,7 @@ export default function ProfileForm() {
   const hasCurrentStepErrors = () => {
     const currentStepFields = {
       1: ['firstName', 'lastName', 'gender', 'dob', 'street', 'city', 'district', 'state', 'pinCode', 'mobile', 'email'],
-      2: ['fatherName', 'fatherOccupation', 'fatherOccupationType', 'fatherOccupationDetails', 'motherName', 'motherOccupation', 'motherOccupationType', 'motherOccupationDetails', 'parentsPhone', 'parentsPhoneLandline', 'familyAnnualIncome', 'numberOfSiblings', 'aspirations'],
+      2: ['fatherName', 'fatherOccupationType', 'fatherOccupationDetails', 'motherName', 'motherOccupationType', 'motherOccupationDetails', 'parentsPhoneLandline', 'familyAnnualIncome', 'numberOfSiblings', 'aspirations'],
       3: ['grade', 'academicYear', 'collegeName', 'totalCollegeFees', 'scholarshipAmountRequired', 'declaration', 'awareness']
     };
     
@@ -735,7 +730,6 @@ export default function ProfileForm() {
             motherName: formData.motherName,
             motherOccupationType: formData.motherOccupationType,
             motherOccupationDetails: formData.motherOccupationDetails,
-            parentsPhone: formData.parentsPhone,
             parentsPhoneLandline: formData.parentsPhoneLandline,
             familyDetails: formData.familyDetails,
             familyAnnualIncome: formData.familyAnnualIncome,
@@ -963,7 +957,7 @@ export default function ProfileForm() {
       console.log('otherCollegeData:', otherCollegeData);
       console.log('Is collegeName === "other"?', formData.collegeName === 'other');
       console.log('Final collegeName in payload:', formData.collegeName === 'other' ? otherCollegeData.collegeName : formData.collegeName);
-      console.log('Final collegePhone in payload:', formData.collegeName === 'other' ? otherCollegeData.collegePhone : formData.collegePhone);
+      console.log('Final collegePhone in payload:', formData.collegeName === 'other' ? otherCollegeData.collegePhone : 'N/A');
       console.log('Bank details in payload:', {
         bankName: formData.collegeName === 'other' ? otherCollegeData.collegeBankName : undefined,
         accountNumber: formData.collegeName === 'other' ? otherCollegeData.accountNumber : undefined,
@@ -1021,7 +1015,7 @@ export default function ProfileForm() {
       setProfile(submittedProfile);
       
       // Update status to profile pending verification
-              setStatus(STUDENT_STATUS.PERSONAL_DOCUMENTS_PENDING as any);
+      setStatus(STUDENT_STATUS.PERSONAL_DOCUMENTS_PENDING as any);
       
       // Clear profile cache after successful submission
       clearProfileCache();
@@ -1032,9 +1026,14 @@ export default function ProfileForm() {
       // Show success toast
       toast({
         title: "Profile Submitted Successfully!",
-        description: "Your profile has been submitted and is pending verification. You will be notified once verified.",
+        description: "Your profile has been submitted. Redirecting to personal documents upload...",
         variant: "default",
       });
+
+      // Redirect to personal documents page after a short delay
+      setTimeout(() => {
+        window.location.href = '/student/personal-documents';
+      }, 1500);
     } catch (error) {
       console.error('Error submitting profile:', error);
       toast({
@@ -1137,7 +1136,7 @@ export default function ProfileForm() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Parents' Phone Number</label>
-                <p className="text-gray-900">{profile?.parentsPhone || 'Not provided'}</p>
+                <p className="text-gray-900">{profile?.parentsPhoneLandline || 'Not provided'}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Family Annual Income</label>

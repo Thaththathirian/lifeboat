@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom"
 import { Toaster } from "@/components/ui/toaster"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
@@ -6,6 +6,7 @@ import { StudentProvider } from "@/contexts/StudentContext"
 import { pageStateManager } from "@/utils/pageState"
 import { StudentStatusProvider } from '@/components/layout/StudentStatusProvider'
 import { StudentStatusSync } from '@/components/StudentStatusSync'
+import { usePWA } from '@/hooks/usePWA'
 
 // Pages
 import LandingPage from "@/pages/LandingPage"
@@ -28,6 +29,9 @@ import StudentAlumni from "@/pages/student/StudentAlumni"
 import ApplyForNext from "@/pages/student/ApplyForNext"
 import StudentAcademicDocuments from "@/pages/student/StudentAcademicDocuments"
 
+// Dynamic imports for less frequently used pages
+const StudentApplicationReview = React.lazy(() => import("@/pages/student/StudentApplicationReview"))
+
 // Mock user data for demonstration
 const mockUsers = {
   student: {
@@ -44,6 +48,7 @@ function App() {
   const [currentPath, setCurrentPath] = useState(() => localStorage.getItem('currentPath') || "/")
   const location = useLocation();
   const navigate = useNavigate();
+  const { isOnline, isInstalled, canInstall, installPWA } = usePWA();
 
   // Enhanced page state persistence
   useEffect(() => {
@@ -214,6 +219,23 @@ function App() {
             </ProtectedRoute>
           } />
           
+          <Route path="/student/personal-documents" element={
+            <ProtectedRoute allowedUserType="student">
+              <StudentStatusProvider>
+                <DashboardLayout
+                  userType="student"
+                  userName={currentUser?.name || ""}
+                  userAvatar={currentUser?.avatar}
+                  currentPath={currentPath}
+                  onNavigate={handleNavigate}
+                >
+                  <StudentDocuments />
+                </DashboardLayout>
+              </StudentStatusProvider>
+            </ProtectedRoute>
+          } />
+          
+          {/* Keep the old route for backward compatibility */}
           <Route path="/student/documents" element={
             <ProtectedRoute allowedUserType="student">
               <StudentStatusProvider>
@@ -326,6 +348,24 @@ function App() {
             </ProtectedRoute>
           } />
           
+          <Route path="/student/application-review" element={
+            <ProtectedRoute allowedUserType="student">
+              <StudentStatusProvider>
+                <DashboardLayout
+                  userType="student"
+                  userName={currentUser?.name || ""}
+                  userAvatar={currentUser?.avatar}
+                  currentPath={currentPath}
+                  onNavigate={handleNavigate}
+                >
+                  <React.Suspense fallback={<div>Loading...</div>}>
+                    <StudentApplicationReview />
+                  </React.Suspense>
+                </DashboardLayout>
+              </StudentStatusProvider>
+            </ProtectedRoute>
+          } />
+          
           <Route path="/student/payment-history" element={
             <ProtectedRoute allowedUserType="student">
               <StudentStatusProvider>
@@ -356,8 +396,8 @@ function App() {
                 </DashboardLayout>
               </StudentStatusProvider>
             </ProtectedRoute>
-          } />
-
+                    } />
+ 
           {/* 404 Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>

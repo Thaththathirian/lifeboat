@@ -16,12 +16,44 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+let app;
+let auth;
 
-// Initialize Analytics (only in production)
+// Check if we have valid Firebase config
+const hasValidConfig = firebaseConfig.apiKey && 
+                      firebaseConfig.apiKey !== 'your_firebase_api_key_here' &&
+                      firebaseConfig.authDomain && 
+                      firebaseConfig.authDomain !== 'your_firebase_auth_domain_here';
+
+if (hasValidConfig) {
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    console.log('Firebase initialized successfully');
+  } catch (error) {
+    console.warn('Firebase initialization failed:', error);
+    // Create fallback auth object
+    auth = {
+      currentUser: null,
+      signOut: async () => {},
+    } as any;
+  }
+} else {
+  console.log('Firebase not configured, using fallback');
+  // Create fallback auth object
+  auth = {
+    currentUser: null,
+    signOut: async () => {},
+  } as any;
+}
+
+// Initialize Analytics (only in production and when measurementId is available)
 let analytics;
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+if (typeof window !== 'undefined' && 
+    process.env.NODE_ENV === 'production' && 
+    firebaseConfig.measurementId && 
+    firebaseConfig.measurementId !== 'your_measurement_id_here' &&
+    app) {
   try {
     analytics = getAnalytics(app);
   } catch (error) {

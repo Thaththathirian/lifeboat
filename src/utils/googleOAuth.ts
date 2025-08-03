@@ -15,7 +15,7 @@ const getEnvVar = (key: string, fallback: string) => {
 
 // Google OAuth Configuration
 export const googleProvider = {
-  clientId: getEnvVar('VITE_GOOGLE_CLIENT_ID', "546768972289-4cn2f2oaj8rvapcf3arrjl591jfttole.apps.googleusercontent.com"),
+  clientId: getEnvVar('VITE_GOOGLE_CLIENT_ID', "644249374099-1ff05geqncf96tog1635t6com8se9eip.apps.googleusercontent.com"),
   clientSecret: getEnvVar('VITE_GOOGLE_CLIENT_SECRET', ""),
 };
 

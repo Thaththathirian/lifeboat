@@ -23,7 +23,6 @@ interface FamilyDetails {
   motherName: string;
   motherOccupationType: string;
   motherOccupationDetails: string;
-  parentsPhone: string;
   parentsPhoneLandline: string;
   familyDetails: string;
   familyAnnualIncome: string;

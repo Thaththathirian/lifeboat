@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Documents Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            min-height: calc(100vh - 40px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .upload-count {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #64748b;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .form-group:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group.has-file {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .required {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .custom-file-input {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 40px;
+            background: white;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .custom-file-input:hover {
+            border-color: #667eea;
+            background: #f8fafc;
+            color: #667eea;
+        }
+
+        .custom-file-input.has-file {
+            border-color: #10b981;
+            background: #f0fdf4;
+            color: #059669;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-icon {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .file-name {
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: #059669;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .submit-section {
+            text-align: center;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.completed {
+            background: #10b981;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Personal Documents Upload</h1>
+            <p>Upload your personal documents for scholarship application</p>
+        </div>
+
+        <div class="upload-count" id="uploadCount">
+            Uploaded: 0 of 4 required documents
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-dot" id="dot1"></div>
+            <div class="progress-dot" id="dot2"></div>
+            <div class="progress-dot" id="dot3"></div>
+            <div class="progress-dot" id="dot4"></div>
+        </div>
+
+        <form id="uploadForm">
+            <div class="form-grid">
+                <div class="form-group" id="request-letter-group">
+                    <label class="label">
+                        Request Letter <span class="required">*</span>
+                    </label>
+                    <div class="file-input-wrapper">
+                        <div class="custom-file-input" id="request-letter-display">
+                            <span class="file-icon">📄</span>
+                            <span>Choose File</span>
+                        </div>
+                        <input type="file" id="request-letter" class="file-input" accept=".pdf,.doc,.docx,.txt" data-required="true">
+                    </div>
+                    <div class="file-name" id="request-letter-name"></div>
+                </div>
+
+                <div class="form-group" id="aadhar-card-group">
+                    <label class="label">
+                        Aadhar Card <span class="required">*</span>
+                    </label>
+                    <div class="file-input-wrapper">
+                        <div class="custom-file-input" id="aadhar-card-display">
+                            <span class="file-icon">🆔</span>
+                            <span>Choose File</span>
+                        </div>
+                        <input type="file" id="aadhar-card" class="file-input" accept="image/*,.pdf" data-required="true">
+                    </div>
+                    <div class="file-name" id="aadhar-card-name"></div>
+                </div>
+
+                <div class="form-group" id="residential-proof-group">
+                    <label class="label">
+                        Residential Proof <span class="required">*</span>
+                    </label>
+                    <div class="file-input-wrapper">
+                        <div class="custom-file-input" id="residential-proof-display">
+                            <span class="file-icon">🏠</span>
+                            <span>Choose File</span>
+                        </div>
+                        <input type="file" id="residential-proof" class="file-input" accept="image/*,.pdf" data-required="true">
+                    </div>
+                    <div class="file-name" id="residential-proof-name"></div>
+                </div>
+
+                <div class="form-group" id="income-certificate-group">
+                    <label class="label">
+                        Income Certificate <span class="required">*</span>
+                    </label>
+                    <div class="file-input-wrapper">
+                        <div class="custom-file-input" id="income-certificate-display">
+                            <span class="file-icon">💰</span>
+                            <span>Choose File</span>
+                        </div>
+                        <input type="file" id="income-certificate" class="file-input" accept="image/*,.pdf" data-required="true">
+                    </div>
+                    <div class="file-name" id="income-certificate-name"></div>
+                </div>
+
+                <div class="form-group" id="father-death-certificate-group">
+                    <label class="label">
+                        Father Death Certificate
+                    </label>
+                    <div class="file-input-wrapper">
+                        <div class="custom-file-input" id="father-death-certificate-display">
+                            <span class="file-icon">📜</span>
+                            <span>Choose File</span>
+                        </div>
+                        <input type="file" id="father-death-certificate" class="file-input" accept="image/*,.pdf" data-required="false">
+                    </div>
+                    <div class="file-name" id="father-death-certificate-name"></div>
+                </div>
+
+                <div class="form-group" id="mother-death-certificate-group">
+                    <label class="label">
+                        Mother Death Certificate
+                    </label>
+                    <div class="file-input-wrapper">
+                        <div class="custom-file-input" id="mother-death-certificate-display">
+                            <span class="file-icon">📜</span>
+                            <span>Choose File</span>
+                        </div>
+                        <input type="file" id="mother-death-certificate" class="file-input" accept="image/*,.pdf" data-required="false">
+                    </div>
+                    <div class="file-name" id="mother-death-certificate-name"></div>
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <button type="button" class="submit-btn" id="submitBtn" onclick="submitDocuments()">
+                    Submit All Documents
+                </button>
+            </div>
+        </form>
+
+        <div class="status" id="statusMessage" style="display: none;"></div>
+    </div>
+
+    <script>
+        let uploadedFiles = {};
+        const requiredDocuments = ['request-letter', 'aadhar-card', 'residential-proof', 'income-certificate'];
+
+        // Initialize file inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInputs = document.querySelectorAll('.file-input');
+            
+            fileInputs.forEach(input => {
+                input.addEventListener('change', handleFileSelect);
+                
+                // Add click handler to custom display
+                const display = document.getElementById(input.id + '-display');
+                display.addEventListener('click', () => input.click());
+            });
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            const inputId = event.target.id;
+            const display = document.getElementById(inputId + '-display');
+            const fileName = document.getElementById(inputId + '-name');
+            const group = document.getElementById(inputId + '-group');
+
+            if (file) {
+                // Check file size (2MB limit)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('File size must be less than 2MB');
+                    event.target.value = '';
+                    return;
+                }
+
+                // Store file
+                uploadedFiles[inputId] = file;
+
+                // Update display
+                display.classList.add('has-file');
+                display.innerHTML = `<span class="file-icon">✅</span><span>File Selected</span>`;
+                fileName.textContent = file.name;
+                group.classList.add('has-file');
+
+                // Update count and progress
+                updateUploadCount();
+                updateProgressDots();
+                updateSubmitButton();
+            }
+        }
+
+        function updateUploadCount() {
+            const requiredUploaded = requiredDocuments.filter(doc => uploadedFiles[doc]).length;
+            const totalUploaded = Object.keys(uploadedFiles).length;
+            
+            document.getElementById('uploadCount').textContent = 
+                `Uploaded: ${requiredUploaded} of ${requiredDocuments.length} required documents (${totalUploaded} total)`;
+        }
+
+        function updateProgressDots() {
+            const requiredUploaded = requiredDocuments.filter(doc => uploadedFiles[doc]).length;
+            
+            requiredDocuments.forEach((doc, index) => {
+                const dot = document.getElementById(`dot${index + 1}`);
+                if (uploadedFiles[doc]) {
+                    dot.classList.add('completed');
+                } else {
+                    dot.classList.remove('completed');
+                }
+            });
+        }
+
+        function updateSubmitButton() {
+            const requiredUploaded = requiredDocuments.filter(doc => uploadedFiles[doc]).length;
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (requiredUploaded === requiredDocuments.length) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit All Documents';
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.textContent = `Submit All Documents (${requiredUploaded}/${requiredDocuments.length} required)`;
+            }
+        }
+
+        function submitDocuments() {
+            const submitBtn = document.getElementById('submitBtn');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            // Check if all required documents are uploaded
+            const missingRequired = requiredDocuments.filter(doc => !uploadedFiles[doc]);
+            
+            if (missingRequired.length > 0) {
+                statusMessage.textContent = `Please upload all required documents: ${missingRequired.join(', ')}`;
+                statusMessage.className = 'status error';
+                statusMessage.style.display = 'block';
+                return;
+            }
+
+            // Show loading state
+            submitBtn.textContent = 'Submitting...';
+            submitBtn.disabled = true;
+            statusMessage.textContent = 'Uploading documents...';
+            statusMessage.className = 'status';
+            statusMessage.style.display = 'block';
+
+            // Simulate API call
+            setTimeout(() => {
+                // Success
+                statusMessage.textContent = 'Documents submitted successfully!';
+                statusMessage.className = 'status success';
+                submitBtn.textContent = 'Submitted Successfully';
+                
+                // Log uploaded files
+                console.log('Submitted documents:', uploadedFiles);
+                
+            }, 2000);
+        }
+
+        // Initialize
+        updateUploadCount();
+        updateProgressDots();
+        updateSubmitButton();
+    </script>
+</body>
+</html> 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getCurrentStatus } from '@/utils/backendService';
 import { StudentStatus } from '@/types/student';
 
@@ -13,9 +13,17 @@ export const useStudentStatusSync = (options: UseStudentStatusSyncOptions = {}) 
   const [currentStatus, setCurrentStatus] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const syncInProgress = useRef(false);
 
   const syncStatus = async () => {
+    // Prevent multiple simultaneous sync calls
+    if (syncInProgress.current) {
+      console.log('🔄 Status sync already in progress, skipping...');
+      return;
+    }
+
     try {
+      syncInProgress.current = true;
       setLoading(true);
       setError(null);
       
@@ -46,6 +54,7 @@ export const useStudentStatusSync = (options: UseStudentStatusSyncOptions = {}) 
       }
     } finally {
       setLoading(false);
+      syncInProgress.current = false;
     }
   };
 

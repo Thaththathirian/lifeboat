@@ -75,7 +75,6 @@ interface FamilyDetails {
   motherName: string;
   motherOccupationType: string;
   motherOccupationDetails: string;
-  parentsPhone: string;
   parentsPhoneLandline: string;
   familyDetails: string;
   familyAnnualIncome: string;
@@ -180,10 +179,10 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
   const hasIncompleteFamilyDetails = (details: FamilyDetails): boolean => {
     const requiredFields = [
       details.fatherName,
-      details.fatherOccupation,
+      details.fatherOccupationType,
       details.motherName,
-      details.motherOccupation,
-      details.parentsPhone,
+      details.motherOccupationType,
+      details.parentsPhoneLandline,
       details.familyDetails,
       details.familyAnnualIncome
     ];
@@ -343,7 +342,7 @@ export default function SubmittedProfileDisplay({ onIncompleteProfile }: Submitt
             {currentApiStatus === StudentStatus.PERSONAL_DETAILS_PENDING && "Loading profile form..."}
             {currentApiStatus === StudentStatus.PERSONAL_DOCUMENTS_PENDING && "Loading submitted profile..."}
             {currentApiStatus === StudentStatus.INTERVIEW_SCHEDULED && "Loading interview details..."}
-            {currentApiStatus === StudentStatus.DOCUMENT_UPLOADED && "Loading document status..."}
+            {currentApiStatus === StudentStatus.ACADEMIC_DOCUMENTS_SUBMITTED && "Loading document status..."}
             {!currentApiStatus && "Loading..."}
           </p>
         </CardHeader>

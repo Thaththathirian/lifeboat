@@ -70,11 +70,25 @@ export function Navigation({ userType, className, closeSidebar }: NavigationProp
       }
     ];
     
+    // Add Application navigation (only show after personal documents are submitted)
+    studentNavItems.push({
+      title: "Application",
+      path: "/student/application",
+      icon: <FileCheck className="h-4 w-4" />
+    });
+    
     // Add Profile navigation
     studentNavItems.push({
       title: "Profile",
       path: "/student/profile",
       icon: <UserCheck className="h-4 w-4" />
+    });
+    
+    // Add Personal Documents navigation
+    studentNavItems.push({
+      title: "Personal Documents",
+      path: "/student/personal-documents",
+      icon: <FileText className="h-4 w-4" />
     });
     
     return studentNavItems;

@@ -11,6 +11,7 @@ import { useStudentStatus } from '@/components/layout/StudentStatusProvider';
 import { sendOTP, verifyOTP, clearRecaptcha } from "@/utils/firebase";
 import { verifyMobileWithToken } from "@/utils/backendService";
 import { StudentStatusSync } from "@/components/StudentStatusSync";
+import { StudentStatus } from '@/types/student';
 
 interface GoogleUser {
   id: string;
@@ -267,7 +268,7 @@ export default function MobileVerification() {
             firebaseUid: result.user.uid,
             ...googleUserData
           });
-          setStatus('Profile Pending');
+          setStatus(StudentStatus.PERSONAL_DETAILS_PENDING);
           
           // Store complete user profile in localStorage for backend access
           const userProfile = {
