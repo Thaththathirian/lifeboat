@@ -104,10 +104,10 @@ export default function ProfileForm() {
 
   // Helper function to get input styling based on errors
   const getInputStyling = (fieldName: string) => {
-    const hasError = errors[fieldName];
+    // Remove red border styling - only show error messages in red text
     return {
-      className: `${hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'} transition-colors duration-200`,
-      errorMessage: hasError ? `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} is required` : ''
+      className: 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200',
+      errorMessage: ''
     };
   };
 
@@ -737,6 +737,44 @@ export default function ProfileForm() {
             aspirations: formData.aspirations,
           };
           saveResult = await saveFamilyDetails(familyDetails);
+        } else if (currentStep === 3) {
+          // Save academic details
+          const academicDetails = {
+            grade: formData.grade,
+            presentSemester: formData.presentSemester,
+            academicYear: formData.academicYear,
+            collegeName: formData.collegeName,
+            collegeAddress: formData.collegeAddress,
+            collegeWebsite: formData.collegeWebsite,
+            referencePersonName: formData.referencePersonName,
+            referencePersonQualification: formData.referencePersonQualification,
+            referencePersonPosition: formData.referencePersonPosition,
+            referencePersonPhone: formData.referencePersonPhone || '',
+            referencePersonEmail: formData.referencePersonEmail || '',
+            totalCollegeFees: formData.totalCollegeFees,
+            scholarshipAmountRequired: formData.scholarshipAmountRequired,
+            marks10th: formData.marks10th,
+            marks12th: formData.marks12th,
+            marksSem1: formData.marksSem1,
+            marksSem2: formData.marksSem2,
+            marksSem3: formData.marksSem3,
+            marksSem4: formData.marksSem4,
+            marksSem5: formData.marksSem5,
+            marksSem6: formData.marksSem6,
+            marksSem7: formData.marksSem7,
+            marksSem8: formData.marksSem8,
+            declaration: formData.declaration,
+            arrears: formData.arrears,
+            awareness: formData.awareness,
+            // Include "other" college fields if collegeName is "other"
+            ...(formData.collegeName === 'other' && {
+              collegeBankName: otherCollegeData.collegeBankName,
+              accountNumber: otherCollegeData.accountNumber,
+              confirmAccountNumber: otherCollegeData.confirmAccountNumber,
+              ifscCode: otherCollegeData.ifscCode,
+            }),
+          };
+          saveResult = await saveAcademicDetails(academicDetails);
         }
         
         console.log('🔍 ProfileForm received saveResult:', saveResult);
@@ -762,6 +800,7 @@ export default function ProfileForm() {
           
           // Handle field-specific errors from backend using fieldErrors
           if (saveResult?.fieldErrors && Object.keys(saveResult.fieldErrors).length > 0) {
+            console.log('🔍 Processing field errors from backend:', saveResult.fieldErrors);
             const fieldErrors: Record<string, string> = {};
             
             // Process each field error from backend
@@ -770,9 +809,21 @@ export default function ProfileForm() {
               const cleanMessage = typeof message === 'string' 
                 ? message.replace(/([a-z])([A-Z])/g, '$1 $2') // Add space before capital letters
                 : String(message);
-              fieldErrors[field] = cleanMessage;
+              
+              console.log(`🔍 Field error: ${field} = ${cleanMessage}`);
+              
+              // Handle "other" college fields - these need to be passed to CollegeDropdown component
+              if (['collegeBankName', 'accountNumber', 'confirmAccountNumber', 'ifscCode'].includes(field)) {
+                // These errors will be handled by the CollegeDropdown component
+                fieldErrors[field] = cleanMessage;
+                console.log(`🔍 Added "other" college field error: ${field} = ${cleanMessage}`);
+              } else {
+                fieldErrors[field] = cleanMessage;
+                console.log(`🔍 Added regular field error: ${field} = ${cleanMessage}`);
+              }
             });
             
+            console.log('🔍 Final field errors to set:', fieldErrors);
             setErrors(fieldErrors);
             
             // Show a general toast message
@@ -1213,7 +1264,7 @@ export default function ProfileForm() {
               value={formData.firstName}
               onChange={(e) => handleInputChange('firstName', e.target.value)}
               disabled={isReadOnly}
-              className={`${errors.firstName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'} transition-colors duration-200`}
+              className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200"
             />
             {errors.firstName && (
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.firstName}</p>
@@ -1482,9 +1533,11 @@ export default function ProfileForm() {
                 <SelectValue placeholder="Select occupation type" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="house_wife">House Wife</SelectItem>
                 <SelectItem value="business">Business</SelectItem>
                 <SelectItem value="employed">Employed</SelectItem>
                 <SelectItem value="daily_labour">Daily Labour</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
                 <SelectItem value="late">Late</SelectItem>
               </SelectContent>
             </Select>
@@ -1632,7 +1685,7 @@ export default function ProfileForm() {
               onChange={(e) => handleInputChange('presentSemester', e.target.value)}
               onKeyPress={handleNumberKeyPress}
               disabled={isReadOnly}
-              className={errors.presentSemester ? 'border-red-500' : ''}
+              className=""
             />
             {errors.presentSemester && (
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.presentSemester}</p>
@@ -1786,7 +1839,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marks10th', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marks10th ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marks10th && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marks10th}</p>
@@ -1802,7 +1855,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marks12th', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marks12th ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marks12th && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marks12th}</p>
@@ -1816,7 +1869,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem1', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem1 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem1 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem1}</p>
@@ -1830,7 +1883,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem2', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem2 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem2 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem2}</p>
@@ -1844,7 +1897,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem3', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem3 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem3 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem3}</p>
@@ -1858,7 +1911,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem4', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem4 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem4 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem4}</p>
@@ -1872,7 +1925,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem5', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem5 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem5 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem5}</p>
@@ -1886,7 +1939,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem6', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem6 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem6 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem6}</p>
@@ -1900,7 +1953,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem7', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem7 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem7 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem7}</p>
@@ -1914,7 +1967,7 @@ export default function ProfileForm() {
                 onChange={(e) => handleInputChange('marksSem8', e.target.value)}
                 onKeyPress={handleMarksKeyPress}
                 disabled={isReadOnly}
-                className={errors.marksSem8 ? 'border-red-500' : ''}
+                className=""
               />
               {errors.marksSem8 && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.marksSem8}</p>
@@ -1973,9 +2026,9 @@ export default function ProfileForm() {
                 checked={formData.awareness}
                 onCheckedChange={(checked) => handleInputChange('awareness', checked)}
                 disabled={isReadOnly}
-                className={errors.awareness ? 'border-red-500' : ''}
+                className=""
               />
-              <label htmlFor="awareness" className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${errors.awareness ? 'text-red-500' : ''}`}>
+                              <label htmlFor="awareness" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 I am aware that the application will be rejected and appropriate action taken, if information provided by me is found to be false or misleading. <span className="text-red-500">*</span>
               </label>
             </div>
@@ -1989,9 +2042,9 @@ export default function ProfileForm() {
                 checked={formData.declaration}
                 onCheckedChange={(checked) => handleInputChange('declaration', checked)}
                 disabled={isReadOnly}
-                className={errors.declaration ? 'border-red-500' : ''}
+                className=""
               />
-              <label htmlFor="declaration" className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${errors.declaration ? 'text-red-500' : ''}`}>
+                              <label htmlFor="declaration" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 I hereby declare that all the information provided by me in the application are completely true and correct in particular. <span className="text-red-500">*</span>
               </label>
             </div>

@@ -134,6 +134,15 @@ export default function CollegeDropdown({
         accountNumbersMatch: otherCollegeData.accountNumber === otherCollegeData.confirmAccountNumber
       }
     });
+    
+    // Debug field errors specifically
+    if (errors && Object.keys(errors).length > 0) {
+      console.log('🔍 CollegeDropdown received errors:', errors);
+      console.log('🔍 IFSC Code error:', errors.ifscCode);
+      console.log('🔍 Account Number error:', errors.accountNumber);
+      console.log('🔍 Confirm Account Number error:', errors.confirmAccountNumber);
+      console.log('🔍 College Bank Name error:', errors.collegeBankName);
+    }
     return (
       <div className="space-y-4">
         <div className="relative">
@@ -177,7 +186,6 @@ export default function CollegeDropdown({
               value={otherCollegeData.collegeName}
               onChange={(e) => handleOtherFieldChange('collegeName', e.target.value)}
               disabled={disabled}
-              className={errors.collegeName ? 'border-red-500' : ''}
             />
             {errors.collegeName && (
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeName}</p>
@@ -193,7 +201,6 @@ export default function CollegeDropdown({
               value={otherCollegeData.collegePhone}
               onChange={(e) => handleOtherFieldChange('collegePhone', e.target.value)}
               disabled={disabled}
-              className={errors.collegePhone ? 'border-red-500' : ''}
             />
             {errors.collegePhone && (
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegePhone}</p>
@@ -209,7 +216,6 @@ export default function CollegeDropdown({
               value={otherCollegeData.collegeBankName}
               onChange={(e) => handleOtherFieldChange('collegeBankName', e.target.value)}
               disabled={disabled}
-              className={errors.collegeBankName ? 'border-red-500' : ''}
             />
             {errors.collegeBankName && (
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.collegeBankName}</p>
@@ -226,7 +232,6 @@ export default function CollegeDropdown({
                 value={otherCollegeData.accountNumber}
                 onChange={(e) => handleOtherFieldChange('accountNumber', e.target.value)}
                 disabled={disabled}
-                className={errors.accountNumber ? 'border-red-500' : ''}
               />
               {errors.accountNumber && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.accountNumber}</p>
@@ -241,7 +246,6 @@ export default function CollegeDropdown({
                 value={otherCollegeData.confirmAccountNumber}
                 onChange={(e) => handleOtherFieldChange('confirmAccountNumber', e.target.value)}
                 disabled={disabled}
-                className={errors.confirmAccountNumber ? 'border-red-500' : ''}
               />
               {errors.confirmAccountNumber && (
                 <p className="text-red-500 text-xs mt-1 font-medium">{errors.confirmAccountNumber}</p>
@@ -262,7 +266,6 @@ export default function CollegeDropdown({
               value={otherCollegeData.ifscCode}
               onChange={(e) => handleOtherFieldChange('ifscCode', e.target.value)}
               disabled={disabled}
-              className={errors.ifscCode ? 'border-red-500' : ''}
             />
             {errors.ifscCode && (
               <p className="text-red-500 text-xs mt-1 font-medium">{errors.ifscCode}</p>

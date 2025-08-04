@@ -57,6 +57,11 @@ interface AcademicDetails {
   declaration: boolean;
   arrears: string;
   awareness: boolean;
+  // Optional bank details for "other" college
+  collegeBankName?: string;
+  accountNumber?: string;
+  confirmAccountNumber?: string;
+  ifscCode?: string;
 }
 
 // Cache for API responses to avoid repeated calls

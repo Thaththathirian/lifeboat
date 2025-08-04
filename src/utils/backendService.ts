@@ -441,7 +441,7 @@ export const getPersonalDetails = async (): Promise<PersonalDetails | null> => {
 };
 
 // Save student personal details
-export const savePersonalDetails = async (details: PersonalDetails): Promise<{ success: boolean; error?: string }> => {
+export const savePersonalDetails = async (details: PersonalDetails): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string> }> => {
   try {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -503,6 +503,7 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<{ s
       
       // Extract error message from response
       let errorMessage = 'Failed to save your progress. Please try again.';
+      let fieldErrors: Record<string, string> = {};
       
       if (data.message) {
         console.log('Error message type:', typeof data.message);
@@ -511,7 +512,8 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<{ s
         if (typeof data.message === 'string') {
           errorMessage = data.message;
         } else if (typeof data.message === 'object') {
-          // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+          // Handle validation errors object like {"ifscCode": "Invalid IFSC Code format."}
+          fieldErrors = data.message;
           const errorMessages = Object.values(data.message);
           console.log('Extracted error messages:', errorMessages);
           errorMessage = errorMessages.join(', ');
@@ -519,7 +521,8 @@ export const savePersonalDetails = async (details: PersonalDetails): Promise<{ s
       }
       
       console.log('Final error message:', errorMessage);
-      return { success: false, error: errorMessage };
+      console.log('Field errors:', fieldErrors);
+      return { success: false, error: errorMessage, fieldErrors };
     }
   } catch (error) {
     console.error('Failed to save personal details:', error);
@@ -588,7 +591,7 @@ export const getFamilyDetails = async (): Promise<FamilyDetails | null> => {
 };
 
 // Save student family details
-export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ success: boolean; error?: string }> => {
+export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string> }> => {
   try {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -652,6 +655,7 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
       
       // Extract error message from response
       let errorMessage = 'Failed to save your progress. Please try again.';
+      let fieldErrors: Record<string, string> = {};
       
       if (data.message) {
         console.log('Error message type:', typeof data.message);
@@ -660,7 +664,8 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
         if (typeof data.message === 'string') {
           errorMessage = data.message;
         } else if (typeof data.message === 'object') {
-          // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+          // Handle validation errors object like {"ifscCode": "Invalid IFSC Code format."}
+          fieldErrors = data.message;
           const errorMessages = Object.values(data.message);
           console.log('Extracted error messages:', errorMessages);
           errorMessage = errorMessages.join(', ');
@@ -668,7 +673,8 @@ export const saveFamilyDetails = async (details: FamilyDetails): Promise<{ succe
       }
       
       console.log('Final error message:', errorMessage);
-      return { success: false, error: errorMessage };
+      console.log('Field errors:', fieldErrors);
+      return { success: false, error: errorMessage, fieldErrors };
     }
   } catch (error) {
     console.error('Failed to save family details:', error);
@@ -756,7 +762,7 @@ export const getAcademicDetails = async (): Promise<AcademicDetails | null> => {
 };
 
 // Save student academic details
-export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ success: boolean; error?: string }> => {
+export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ success: boolean; error?: string; fieldErrors?: Record<string, string> }> => {
   try {
     const token = localStorage.getItem('authToken');
     if (!token) {
@@ -846,6 +852,7 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
       
       // Extract error message from response
       let errorMessage = 'Failed to save your progress. Please try again.';
+      let fieldErrors: Record<string, string> = {};
       
       if (data.message) {
         console.log('Error message type:', typeof data.message);
@@ -854,7 +861,8 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
         if (typeof data.message === 'string') {
           errorMessage = data.message;
         } else if (typeof data.message === 'object') {
-          // Handle validation errors object like {"street": "The Street Address field must be at least 5 characters in length."}
+          // Handle validation errors object like {"ifscCode": "Invalid IFSC Code format."}
+          fieldErrors = data.message;
           const errorMessages = Object.values(data.message);
           console.log('Extracted error messages:', errorMessages);
           errorMessage = errorMessages.join(', ');
@@ -862,7 +870,8 @@ export const saveAcademicDetails = async (details: AcademicDetails): Promise<{ s
       }
       
       console.log('Final error message:', errorMessage);
-      return { success: false, error: errorMessage };
+      console.log('Field errors:', fieldErrors);
+      return { success: false, error: errorMessage, fieldErrors };
     }
   } catch (error) {
     console.error('Failed to save academic details:', error);
